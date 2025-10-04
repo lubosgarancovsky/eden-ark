@@ -37,9 +37,9 @@ func NewClientHandler(parser *rsql.Parser, s *service.ClientService) *ClientHand
 // @Success      200  {array}   ClientPage
 // @Router       /v1/arc/admin/clients [get]
 func (h *ClientHandler) FindAll(c *gin.Context) {
-	lq, err := helpers.CreateListingQuery(c, h.parser, listing.ClientFilter, listing.ClientSort)
-	if err != nil {
-		c.Error(err)
+	lq, apiErr := helpers.CreateListingQuery(c, h.parser, listing.ClientFilter, listing.ClientSort)
+	if apiErr != nil {
+		c.Error(apiErr)
 		return
 	}
 
@@ -50,9 +50,16 @@ func (h *ClientHandler) FindAll(c *gin.Context) {
 	}
 
 	c.JSON(200, result)
-
 }
 
+// @Summary      Get client by ID
+// @Description  Returns a client by its ID
+// @Tags         Clients
+// @Accept       json
+// @Produce      json
+// @Param        clientId   path      string  true  "Client ID"
+// @Success      200  {array}   model.Client
+// @Router       /v1/arc/admin/clients/{clientId} [get]
 func (h *ClientHandler) FindByID(c *gin.Context) {
 	UID, err := helpers.ExtractID(c, "clientId")
 	if err != nil {

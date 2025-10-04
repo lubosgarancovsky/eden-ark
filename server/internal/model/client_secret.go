@@ -7,12 +7,11 @@ import (
 )
 
 type ClientSecretRequest struct {
-	ClientID  uuid.UUID `json:"clientId"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type ClientSecret struct {
-	ID           uuid.UUID `json:"id"`
+	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	ClientSecret string    `json:"clientSecret"`
 	ClientID     uuid.UUID `json:"clientId"`
 	ExpiresAt    time.Time `json:"expiresAt"`

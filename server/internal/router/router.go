@@ -19,6 +19,11 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	clientService := service.NewClientService(clientRepo)
 	clientHandler := handler.NewClientHandler(parser, clientService)
 
+	// Secrets
+	clientSecretRepo := repository.NewClientSecretRepository(db)
+	clientSecretService := service.NewClientSecretService(clientSecretRepo)
+	clientSecretHandler := handler.NewClientSecretHandler(parser, clientSecretService)
+
 	v1 := r.Group("/v1/arc")
 	v1.Use(middleware.ErrorMiddleware())
 
@@ -29,5 +34,10 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		protected.POST("/admin/clients", clientHandler.Create)
 		protected.PUT("/admin/clients/:clientId", clientHandler.Update)
 		protected.DELETE("/admin/clients/:clientId", clientHandler.Delete)
+	}
+	{
+		protected.GET("/admin/clients/:clientId/secrets", clientSecretHandler.FindAll)
+		protected.POST("/admin/clients/:clientId/secrets", clientSecretHandler.Create)
+		protected.DELETE("/admin/clients/:clientId/secrets/:clientSecretId", clientSecretHandler.Delete)
 	}
 }
