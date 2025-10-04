@@ -15,8 +15,18 @@ func NewClientService(r *repository.ClientRepository) *ClientService {
 	return &ClientService{r}
 }
 
-func (s *ClientService) FindAll(ls *list.ListingQuery) (list.Page[model.Client], error) {
+func (s *ClientService) FindAll(lq *list.ListingQuery) (*list.Page[model.Client], error) {
+	items, totalCount, err := s.r.FindAll(lq)
+	if err != nil {
+		return nil, err
+	}
 
+	return &list.Page[model.Client]{
+		Items:      items,
+		Page:       lq.Page,
+		PageSize:   lq.Offset,
+		TotalCount: totalCount,
+	}, nil
 }
 
 func (s *ClientService) FindByID(ID uuid.UUID) (*model.Client, error) {
@@ -31,4 +41,19 @@ func (s *ClientService) Create(input *model.ClientRequest) (*model.Client, error
 		IsConfidential: input.IsConfidential,
 	}
 	return s.r.Insert(&client)
+}
+
+func (s *ClientService) Update(ID uuid.UUID, input *model.ClientRequest) (*model.Client, error) {
+	client := model.Client{
+		ID:             ID,
+		Name:           input.Name,
+		RedirectUris:   input.RedirectUris,
+		GrantTypes:     input.GrantTypes,
+		IsConfidential: input.IsConfidential,
+	}
+	return s.r.Update(&client)
+}
+
+func (s *ClientService) Delete(ID uuid.UUID) error {
+	return s.r.Delete(ID)
 }

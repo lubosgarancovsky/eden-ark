@@ -4,7 +4,7 @@
 -- USERS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_users (
-                                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT UNIQUE NOT NULL,
     first_name TEXT,
     last_name TEXT,
@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_iam_users_email ON iam_users (email);
 -- CLIENTS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_clients (
-                                           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     redirect_uris TEXT[] NOT NULL,
     grant_types TEXT[] NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS iam_clients (
 -- CLIENT SECRETS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_client_secrets (
-                                                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL REFERENCES iam_clients(id) ON DELETE CASCADE,
     client_secret TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS iam_client_secrets (
 -- AUTHORIZATION CODES
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_auth_codes (
-                                              code TEXT PRIMARY KEY,
-                                              user_id UUID NOT NULL REFERENCES iam_users(id) ON DELETE CASCADE,
+    code TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES iam_users(id) ON DELETE CASCADE,
     client_id UUID NOT NULL REFERENCES iam_clients(id) ON DELETE CASCADE,
     redirect_uri TEXT NOT NULL,
     scopes TEXT[] NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS iam_auth_codes (
 -- TOKENS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_tokens (
-                                          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES iam_users(id) ON DELETE CASCADE,
     client_id UUID NOT NULL REFERENCES iam_clients(id) ON DELETE CASCADE,
     access_token TEXT UNIQUE NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS iam_tokens (
 -- SESSIONS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_sessions (
-                                            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES iam_users(id) ON DELETE CASCADE,
     session_token TEXT UNIQUE NOT NULL,
     ip_address TEXT,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS iam_sessions (
 -- AUDIT LOGS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_audit_logs (
-                                              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     actor_id UUID REFERENCES iam_users(id),
     action TEXT NOT NULL,
     target_user_id UUID REFERENCES iam_users(id),
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS iam_audit_logs (
 -- RECOVERY TOKENS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_recovery_tokens (
-                                                   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES iam_users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,
     recovery_type TEXT NOT NULL DEFAULT 'password' CHECK (recovery_type IN ('password', 'email')),

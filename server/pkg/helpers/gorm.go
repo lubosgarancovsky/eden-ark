@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/lubosgarancovsky/go-kit/list"
@@ -16,15 +17,16 @@ type ListState[T any] struct {
 }
 
 func OrderBy[T any](query *gorm.DB, state *ListState[T]) *gorm.DB {
-	for i := 0; i < len(state.lq.Sort); i++ {
-		query = query.Order(state.lq.Sort[i])
+	for _, clause := range state.lq.Sort {
+		query = query.Order(fmt.Sprintf("%s %s", clause.Field, clause.Direction))
 	}
 	return query
 }
 
 func Paginate[T any](query *gorm.DB, state *ListState[T]) {
 	defer state.wg.Done()
-	if err := query.Limit(state.lq.Limit).Offset(state.lq.Offset).Find(&state.items).Error; err != nil {
+	q := OrderBy(query, state)
+	if err := q.Limit(state.lq.Limit).Offset(state.lq.Offset).Find(&state.items).Error; err != nil {
 		state.errList <- err
 	}
 }
@@ -44,8 +46,6 @@ func List[T any](query *gorm.DB, lq *list.ListingQuery) ([]T, int64, error) {
 		errList:    make(chan error, 2),
 		lq:         lq,
 	}
-
-	query = OrderBy(query, state)
 
 	state.wg.Add(2)
 	go Paginate(query.Session(&gorm.Session{}), state)

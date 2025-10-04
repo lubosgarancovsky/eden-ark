@@ -1,7 +1,6 @@
 // @title EDEN ARC (IAM) API
 // @version 1.0
 // @description Identity and Access Management API.
-// @BasePath /v1/arc/
 package main
 
 import (
