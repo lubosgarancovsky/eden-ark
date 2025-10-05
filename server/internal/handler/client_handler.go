@@ -25,7 +25,7 @@ func NewClientHandler(parser *rsql.Parser, s *service.ClientService) *ClientHand
 	return &ClientHandler{s, parser}
 }
 
-// @Summary      List clients
+// FindAll @Summary      List clients
 // @Description  Returns a paginated list of all clients
 // @Tags         Clients
 // @Accept       json
@@ -52,7 +52,7 @@ func (h *ClientHandler) FindAll(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary      Get client by ID
+// FindByID @Summary      Get client by ID
 // @Description  Returns a client by its ID
 // @Tags         Clients
 // @Accept       json
@@ -76,7 +76,7 @@ func (h *ClientHandler) FindByID(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary      Create a new client
+// Create @Summary      Create a new client
 // @Description  Registers a new OAuth client in the IAM system
 // @Tags         Clients
 // @Accept       json
@@ -101,7 +101,7 @@ func (h *ClientHandler) Create(c *gin.Context) {
 	c.JSON(201, result)
 }
 
-// @Summary      Update a client
+// Update @Summary      Update a client
 // @Description  Updates an existing OAuth client in the IAM system
 // @Tags         Clients
 // @Accept       json
@@ -132,7 +132,7 @@ func (h *ClientHandler) Update(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary      Delete a client
+// Delete @Summary      Delete a client
 // @Description  Deletes the OAuth client from the IAM system
 // @Tags         Clients
 // @Accept       json

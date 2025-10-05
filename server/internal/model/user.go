@@ -30,7 +30,7 @@ type UpdateUserRequest struct {
 }
 
 type User struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	FirstName    string    `json:"firstName"`
 	LastName     string    `json:"lastName"`
 	Username     string    `json:"username"`

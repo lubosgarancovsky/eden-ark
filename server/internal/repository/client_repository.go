@@ -65,7 +65,7 @@ func (r *ClientRepository) Delete(clientID uuid.UUID) *errors.APIError {
 		return errors.Wrap(errors.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return errors.Wrap(errors.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Client with id %s does not exist", clientID))
+		return errors.ErrNotFound.WithMessage(fmt.Sprintf("Client with id %s does not exist", clientID))
 	}
 	return nil
 }

@@ -27,7 +27,7 @@ func NewClientSecretHandler(parser *rsql.Parser, s *service.ClientSecretService)
 	return &ClientSecretHandler{s, parser}
 }
 
-// @Summary      List client secrets
+// FindAll @Summary      List client secrets
 // @Description  Returns a paginated list of all secrets by client ID
 // @Tags         Client secrets
 // @Accept       json
@@ -61,7 +61,7 @@ func (h *ClientSecretHandler) FindAll(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// @Summary      Create a new client secret
+// Create @Summary      Create a new client secret
 // @Description  Registers a new OAuth client secret by client ID
 // @Tags         Client secrets
 // @Accept       json
@@ -94,7 +94,7 @@ func (h *ClientSecretHandler) Create(c *gin.Context) {
 	c.JSON(201, result)
 }
 
-// @Summary      Delete a client secret
+// Delete @Summary      Delete a client secret
 // @Description  Deletes an OAuth client secret belonging to a specific client
 // @Tags         Client secrets
 // @Accept       json

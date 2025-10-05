@@ -7,7 +7,7 @@ import (
 )
 
 type RecoveryToken struct {
-	ID           uuid.UUID `json:"id"`
+	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	UserID       uuid.UUID `json:"userId"`
 	Token        string    `json:"token"`
 	RecoveryType string    `json:"recoveryType"` // "password" or "email"

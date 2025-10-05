@@ -7,7 +7,7 @@ import (
 )
 
 type AuditLog struct {
-	ID           uuid.UUID  `json:"id"`
+	ID           uuid.UUID  `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	ActorID      *uuid.UUID `json:"actorId,omitempty"`
 	Action       string     `json:"action"`
 	TargetUserID *uuid.UUID `json:"targetUserId,omitempty"`

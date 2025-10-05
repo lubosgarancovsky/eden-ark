@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS iam_client_secrets (
     client_secret TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     expires_at TIMESTAMP WITH TIME ZONE
-                                                           );
+);
 
 -- ====================
 -- AUTHORIZATION CODES
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS iam_auth_codes (
     code_challenge_method TEXT,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-    );
+);
 
 -- ====================
 -- TOKENS
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS iam_tokens (
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     revoked BOOLEAN NOT NULL DEFAULT FALSE
-    );
+);
 
 -- ====================
 -- SESSIONS
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS iam_sessions (
     user_agent TEXT,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-    );
+);
 
 -- ====================
 -- AUDIT LOGS
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS iam_audit_logs (
     ip_address TEXT,
     user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-    );
+);
 
 -- ====================
 -- RECOVERY TOKENS
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS iam_recovery_tokens (
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-    );
+);
 -- +goose StatementEnd
 
 -- +goose Down
