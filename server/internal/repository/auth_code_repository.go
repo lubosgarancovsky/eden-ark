@@ -11,8 +11,8 @@ type AuthCodeRepository struct {
 	db *gorm.DB
 }
 
-func NewAuthCodeRepository(db *gorm.DB) AuthCodeRepository {
-	return AuthCodeRepository{db}
+func NewAuthCodeRepository(db *gorm.DB) *AuthCodeRepository {
+	return &AuthCodeRepository{db}
 }
 
 func (r *AuthCodeRepository) FindByCode(code string) (*model.AuthorizationCode, error) {

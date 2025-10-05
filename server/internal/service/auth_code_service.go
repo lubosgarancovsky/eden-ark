@@ -1,14 +1,13 @@
 package service
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
-	"fmt"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
 	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
 )
 
 type AuthCodeService struct {
@@ -19,25 +18,30 @@ func NewAuthCodeService(r *repository.AuthCodeRepository) *AuthCodeService {
 	return &AuthCodeService{r}
 }
 
-//func (s *AuthCodeService) CreateAuthCode(userID uuid.UUID, input interface{}) (*model.AuthorizationCode, error) {
-//	codeHash := generateAuthCode()
-//	if codeHash == "" {
-//		return nil, errors.ErrInternalServer
-//	}
-//
-//	code := &model.AuthorizationCode{
-//		Code:                codeHash,
-//		UserID:              userID,
-//		ClientID:            input.ClientID,
-//		RedirectURI:         input.RedirectURI,
-//		Scopes:              []string{},
-//		CodeChallenge:       input.CodeChallenge,
-//		CodeChallengeMethod: input.CodeChallengeMethod,
-//		ExpiresAt:           time.Now().Add(time.Minute * 2),
-//	}
-//
-//	return s.r.Insert(code)
-//}
+func (s *AuthCodeService) CreateAuthCode(session *model.Session, input *model.AuthorizeQuery) (*model.AuthorizationCode, error) {
+	codeHash := helpers.SHA256(48)
+	if codeHash == "" {
+		return nil, errors.ErrInternalServer
+	}
+
+	clientID, err := uuid.Parse(input.ClientID)
+	if err != nil {
+		return nil, errors.Wrap(errors.ErrInvalidUUID, err)
+	}
+
+	code := &model.AuthorizationCode{
+		Code:                codeHash,
+		UserID:              session.UserID,
+		ClientID:            clientID,
+		RedirectURI:         input.RedirectURI,
+		Scope:               input.Scope,
+		CodeChallenge:       input.CodeChallenge,
+		CodeChallengeMethod: input.CodeChallengeMethod,
+		ExpiresAt:           time.Now().Add(time.Minute * 2), // TODO: Load from config
+	}
+
+	return s.r.Insert(code)
+}
 
 func (s *AuthCodeService) DeleteAuthCode(userID uuid.UUID, clientID uuid.UUID, code string) error {
 	authCode, err := s.r.FindByCode(code)
@@ -54,18 +58,4 @@ func (s *AuthCodeService) DeleteAuthCode(userID uuid.UUID, clientID uuid.UUID, c
 	}
 
 	return s.r.Delete(code)
-}
-
-func generateAuthCode() string {
-	randomBytes := make([]byte, 48)
-	if _, err := rand.Read(randomBytes); err != nil {
-		return ""
-	}
-
-	rawCode := base64.RawURLEncoding.EncodeToString(randomBytes)
-
-	hash := sha256.Sum256([]byte(rawCode))
-	codeHash := fmt.Sprintf("%x", hash[:])
-
-	return codeHash
 }

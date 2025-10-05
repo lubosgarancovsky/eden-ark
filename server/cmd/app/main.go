@@ -6,15 +6,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lubosgarancovsky/eden-arc/docs"
 	"github.com/lubosgarancovsky/eden-arc/internal/config"
 	"github.com/lubosgarancovsky/eden-arc/internal/db"
 	"github.com/lubosgarancovsky/eden-arc/internal/router"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
-	_ "github.com/lubosgarancovsky/eden-arc/docs"
 )
 
 func main() {
@@ -22,9 +20,16 @@ func main() {
 	gormDB := db.ConnectDB(cfg.DBUrl)
 
 	r := gin.Default()
-	r.GET("/api/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.SetupRouter(r, gormDB, cfg)
+
+	// Load react client files
+	dist := filepath.Join("..", "client", "dist")
+	r.Static("/assets", filepath.Join(dist, "assets"))
+	r.StaticFile("/favicon.ico", filepath.Join(dist, "favicon.ico"))
+	r.NoRoute(func(c *gin.Context) {
+		c.File(filepath.Join(dist, "index.html"))
+	})
 
 	err := r.Run(fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {

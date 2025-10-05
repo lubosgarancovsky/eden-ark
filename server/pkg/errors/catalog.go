@@ -32,4 +32,16 @@ var (
 		Message:    "Not found",
 		HTTPStatus: http.StatusNotFound,
 	}
+
+	ErrInvalidCredentials = &APIError{
+		Code:       "INVALID CREDENTIALS",
+		Message:    "Invalid credentials",
+		HTTPStatus: http.StatusUnauthorized,
+	}
+
+	ErrUnauthorized = &APIError{
+		Code:       "UNAUTHORIZED",
+		Message:    "Unauthorized",
+		HTTPStatus: http.StatusUnauthorized,
+	}
 )

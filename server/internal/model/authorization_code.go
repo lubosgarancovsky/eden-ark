@@ -11,7 +11,7 @@ type AuthorizationCode struct {
 	UserID              uuid.UUID `json:"userId"`
 	ClientID            uuid.UUID `json:"clientId"`
 	RedirectURI         string    `json:"redirectUri"`
-	Scopes              []string  `json:"scopes"`
+	Scope               string    `json:"scope"`
 	CodeChallenge       *string   `json:"codeChallenge,omitempty"`
 	CodeChallengeMethod *string   `json:"codeChallengeMethod,omitempty"`
 	ExpiresAt           time.Time `json:"expiresAt"`
