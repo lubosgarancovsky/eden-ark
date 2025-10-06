@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+html {
+    @apply text-neutral-100
+}
+
+body {
+    @apply bg-neutral-900
+}
+
+h1 {
+    @apply text-4xl
+}
+
+input {
+    @apply border border-neutral-700 p-4 rounded-lg outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-200;
+}
+
+.link {
+    @apply font-medium text-blue-500 text-sm hover:underline;
+}
+
+label {
+    @apply font-medium
+}
