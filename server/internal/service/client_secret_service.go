@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
@@ -41,6 +43,19 @@ func (s *ClientSecretService) FindAll(clientID uuid.UUID, lq *list.ListingQuery)
 		PageSize:   lq.Limit,
 		TotalCount: totalCount,
 	}, nil
+}
+
+func (s *ClientSecretService) ValidateSecret(clientID uuid.UUID, secretStr string) (*model.ClientSecret, error) {
+	secret, err := s.r.FindOne(clientID, secretStr)
+	if err != nil {
+		return nil, err
+	}
+
+	if secret.ExpiresAt.Before(time.Now()) {
+		return nil, errors.ErrUnauthorized.WithMessage("secret expired")
+	}
+
+	return secret, nil
 }
 
 func (s *ClientSecretService) Create(clientID uuid.UUID, input *model.ClientSecretRequest) (*model.ClientSecret, error) {

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-arc/internal/listing"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
@@ -84,7 +82,6 @@ func (h *ClientSecretHandler) Create(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("HAVE CLIENT ID AND INPUT")
 	result, err := h.s.Create(clientID, &input)
 	if err != nil {
 		c.Error(err)
@@ -115,8 +112,6 @@ func (h *ClientSecretHandler) Delete(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-
-	fmt.Println(clientID, secretID)
 
 	if err := h.s.Delete(clientID, secretID); err != nil {
 		c.Error(err)

@@ -13,6 +13,14 @@ type IsAvailableRequest struct {
 type IsAvailableResponse struct {
 	IsAvailable bool `json:"isAvailable"`
 }
+type EmailRequest struct {
+	Email string `json:"email"`
+}
+
+type PasswordRequest struct {
+	Password string `json:"password"`
+	Token    string `json:"token"`
+}
 
 type CreateUserRequest struct {
 	Email    string `json:"email"`

@@ -105,9 +105,8 @@ CREATE TABLE IF NOT EXISTS iam_audit_logs (
 -- RECOVERY TOKENS
 -- ====================
 CREATE TABLE IF NOT EXISTS iam_recovery_tokens (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token TEXT UNIQUE PRIMARY KEY,
     user_id UUID REFERENCES iam_users(id) ON DELETE CASCADE,
-    token TEXT UNIQUE NOT NULL,
     recovery_type TEXT NOT NULL DEFAULT 'password' CHECK (recovery_type IN ('password', 'email')),
     metadata TEXT,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,

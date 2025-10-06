@@ -33,6 +33,14 @@ func (r *ClientSecretRepository) FindAll(clientID uuid.UUID, lq *list.ListingQue
 	return items, total, nil
 }
 
+func (r *ClientSecretRepository) FindOne(clientID uuid.UUID, secret string) (*model.ClientSecret, error) {
+	var result model.ClientSecret
+	if err := r.db.Model(&model.ClientSecret{}).Where("client_id = ? AND client_secret = ?", clientID, secret).First(&result).Error; err != nil {
+		return nil, errors.Wrap(errors.ErrInternalServer, err)
+	}
+	return &result, nil
+}
+
 func (r *ClientSecretRepository) Insert(clientSecret *model.ClientSecret) (*model.ClientSecret, error) {
 	if err := r.db.Clauses(clause.Returning{}).Create(clientSecret).Error; err != nil {
 		return nil, errors.Wrap(errors.ErrInternalServer, err)

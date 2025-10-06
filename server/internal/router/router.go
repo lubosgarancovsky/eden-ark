@@ -19,6 +19,9 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	// Global middleware
 	r.Use(middleware.ErrorMiddleware())
 
+	// Email
+	emailService := service.NewEmailService(cfg)
+
 	// Clients
 	clientRepo := repository.NewClientRepository(db)
 	clientService := service.NewClientService(clientRepo)
@@ -35,16 +38,22 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 	// Session
 	sessionRepo := repository.NewSessionRepository(db)
-	sessionService := service.NewSessionService(sessionRepo)
+	sessionService := service.NewSessionService(cfg, sessionRepo)
+
+	// Recovery token
+	recoveryTokenRepo := repository.NewRecoveryTokenRepository(db)
+	recoveryTokenService := service.NewRecoveryTokenService(cfg, recoveryTokenRepo)
 
 	// User
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(cfg, userRepo, recoveryTokenService, emailService)
+	userHandler := handler.NewUserHandler(userService)
 
 	// OAuth2
-	oauth2Handler := handler.NewOAuth2Handler(authCodeService, sessionService, clientService, userService)
+	oauth2Service := service.NewOAuthService(cfg, clientService, clientSecretService, sessionService, userService, authCodeService)
+	oauth2Handler := handler.NewOAuth2Handler(oauth2Service)
 
-	v1 := r.Group("/v1/arc")
+	v1 := r.Group("/v1/ark")
 
 	// OAuth2 endpoints
 	oauth2 := r.Group("/oauth2")
@@ -71,6 +80,12 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		adminClientSecret.GET("/", clientSecretHandler.FindAll)
 		adminClientSecret.POST("/", clientSecretHandler.Create)
 		adminClientSecret.DELETE("/:clientSecretId", clientSecretHandler.Delete)
+	}
+
+	userUser := v1.Group("/users")
+	{
+		userUser.POST("/request-reset-password", userHandler.RequestResetPassword)
+		userUser.POST("/reset-password", userHandler.ResetPassword)
 	}
 
 	// Swagger

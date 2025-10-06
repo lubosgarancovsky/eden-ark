@@ -9,33 +9,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/service"
 	errors2 "github.com/lubosgarancovsky/eden-arc/pkg/errors"
 )
 
-// http://localhost:9091/oauth2/authorize?response_type=code&client_id=462d3f47-1684-4a5d-8ebe-bdbf03f16fce&redirect_uri=http://google.com&scope=openid email&state=123456
-
 type OAuth2Handler struct {
-	authCodeService   *service.AuthCodeService
-	sessionService    *service.SessionService
-	clientService     *service.ClientService
-	userService       *service.UserService
+	oauthService      *service.OAuthService
 	sessionCookieName string
 }
 
-func NewOAuth2Handler(
-	authCodeService *service.AuthCodeService,
-	sessionService *service.SessionService,
-	clientService *service.ClientService,
-	userService *service.UserService,
-) *OAuth2Handler {
+func NewOAuth2Handler(oauthService *service.OAuthService) *OAuth2Handler {
 	return &OAuth2Handler{
-		authCodeService:   authCodeService,
-		sessionService:    sessionService,
-		clientService:     clientService,
-		userService:       userService,
+		oauthService:      oauthService,
 		sessionCookieName: "session_id",
 	}
 }
@@ -52,13 +38,12 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 		return
 	}
 
-	if err := h.validateClient(&authorizeQuery); err != nil {
+	if _, err := h.oauthService.ValidateClientAtAuthorize(&authorizeQuery); err != nil {
 		c.Error(err)
 		return
 	}
 
 	cookie, err := c.Cookie(h.sessionCookieName)
-	fmt.Println(cookie)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
 			fullPath := c.Request.URL.RequestURI()
@@ -70,13 +55,7 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 		return
 	}
 
-	session, err := h.sessionService.FindByToken(cookie)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	authCode, err := h.authCodeService.CreateAuthCode(session, &authorizeQuery)
+	_, authCode, err := h.oauthService.SaveAuthCode(cookie, &authorizeQuery)
 	if err != nil {
 		c.Error(err)
 		return
@@ -85,6 +64,7 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 	baseURI := authCode.RedirectURI
 	params := url.Values{}
 	params.Add("code", authCode.Code)
+	params.Add("state", authorizeQuery.State)
 	redirectURI := baseURI + "?" + params.Encode()
 
 	c.Redirect(302, redirectURI)
@@ -92,7 +72,35 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 }
 
 func (h *OAuth2Handler) Token(c *gin.Context) {
-	// TODO: Implement token endpoint
+	var tokenQuery model.TokenQuery
+	if err := c.ShouldBind(&tokenQuery); err != nil {
+		c.Error(err)
+		return
+	}
+
+	client, err := h.oauthService.ValidateClientAtToken(&tokenQuery)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	switch tokenQuery.GrantType {
+	case "authorization_code":
+		h.handleAuthCodeGrantType(c, client, tokenQuery)
+		return
+	case "refresh_token":
+		h.handleRefreshGrantType(c, client, tokenQuery)
+		return
+	default:
+		c.Error(errors2.ErrBadRequest.WithMessage("unsupported grant type"))
+		return
+	}
+
+}
+
+func (h *OAuth2Handler) Logout(c *gin.Context) {
+	// TODO: Logout user
+	return
 }
 
 func (h *OAuth2Handler) Login(c *gin.Context) {
@@ -102,18 +110,7 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.FindByEmail(input.Email)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	if match := h.userService.MatchPassword(input.Password, user.PasswordHash); !match {
-		c.Error(errors2.ErrInvalidCredentials)
-		return
-	}
-
-	session, err := h.sessionService.Insert(user.ID, c.Request.RemoteAddr, c.Request.UserAgent())
+	session, err := h.oauthService.SaveSession(&input, c.Request.RemoteAddr, c.Request.UserAgent())
 	if err != nil {
 		c.Error(err)
 		return
@@ -137,32 +134,62 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 	return
 }
 
-func (h *OAuth2Handler) validateClient(query *model.AuthorizeQuery) error {
-	clientID := uuid.MustParse(query.ClientID)
-	client, err := h.clientService.FindByID(clientID)
+func (h *OAuth2Handler) handleAuthCodeGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {
+	code, err := h.oauthService.ValidateAuthorizationCode(client, &tokenQuery)
 	if err != nil {
-		return err
+		c.Error(err)
+		return
 	}
 
-	if !client.IsConfidential {
-		if query.CodeChallenge == nil || *query.CodeChallenge == "" {
-			return errors2.ErrBadRequest.WithMessage("code_challenge is required")
-		}
-		if query.CodeChallengeMethod == nil {
-			return errors2.ErrBadRequest.WithMessage("code_challenge_method is required")
-		}
-		if *query.CodeChallengeMethod == "S256" {
-			return errors2.ErrBadRequest.WithMessage("code_challenge_method is not supported")
-		}
+	sessionID, err := c.Cookie(h.sessionCookieName)
+	if err != nil {
+		c.Error(err)
+		return
 	}
 
-	for _, v := range client.RedirectUris {
-		if v == query.RedirectURI {
-			return nil
-		}
+	user, session, err := h.oauthService.ValidateUserSession(sessionID)
+	if err != nil {
+		c.Error(err)
+		return
 	}
 
-	return errors2.ErrBadRequest.WithMessage("invalid redirect uri")
+	jwtPayload, err := h.oauthService.GenerateTokens(client, user, session, &tokenQuery)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	h.oauthService.DeleteAuthCode(code)
+
+	c.JSON(200, jwtPayload)
+}
+
+func (h *OAuth2Handler) handleRefreshGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {
+	authHeader := c.GetHeader("Authorization")
+	if _, err := h.oauthService.ValidateBasicToken(client, authHeader); err != nil {
+		c.Error(err)
+		return
+	}
+
+	sessionID, err := c.Cookie(h.sessionCookieName)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	user, session, err := h.oauthService.ValidateUserSession(sessionID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	jwtPayload, err := h.oauthService.GenerateTokens(client, user, session, &tokenQuery)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, jwtPayload)
 }
 
 func verifyAuthorizeQuery(query *model.AuthorizeQuery) error {

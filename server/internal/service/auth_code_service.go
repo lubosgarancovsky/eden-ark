@@ -18,6 +18,10 @@ func NewAuthCodeService(r *repository.AuthCodeRepository) *AuthCodeService {
 	return &AuthCodeService{r}
 }
 
+func (s *AuthCodeService) FindByCode(code string) (*model.AuthorizationCode, error) {
+	return s.r.FindByCode(code)
+}
+
 func (s *AuthCodeService) CreateAuthCode(session *model.Session, input *model.AuthorizeQuery) (*model.AuthorizationCode, error) {
 	codeHash := helpers.SHA256(48)
 	if codeHash == "" {
@@ -43,19 +47,6 @@ func (s *AuthCodeService) CreateAuthCode(session *model.Session, input *model.Au
 	return s.r.Insert(code)
 }
 
-func (s *AuthCodeService) DeleteAuthCode(userID uuid.UUID, clientID uuid.UUID, code string) error {
-	authCode, err := s.r.FindByCode(code)
-	if err != nil {
-		return err
-	}
-
-	if authCode.UserID != userID {
-		return errors.ErrNotFound
-	}
-
-	if authCode.ClientID != clientID {
-		return errors.ErrNotFound
-	}
-
+func (s *AuthCodeService) DeleteAuthCode(code string) error {
 	return s.r.Delete(code)
 }

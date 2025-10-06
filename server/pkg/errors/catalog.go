@@ -44,4 +44,16 @@ var (
 		Message:    "Unauthorized",
 		HTTPStatus: http.StatusUnauthorized,
 	}
+
+	ErrInvalidGrant = &APIError{
+		Code:       "INVALID GRANT",
+		Message:    "Invalid grant",
+		HTTPStatus: http.StatusBadRequest,
+	}
+
+	ErrInvalidScope = &APIError{
+		Code:       "INVALID SCOPE",
+		Message:    "Invalid scope",
+		HTTPStatus: http.StatusBadRequest,
+	}
 )

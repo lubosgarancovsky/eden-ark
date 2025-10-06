@@ -35,7 +35,7 @@ func NewClientHandler(parser *rsql.Parser, s *service.ClientService) *ClientHand
 // @Param        filter      query     string     false  "RSQL filter query"
 // @Param        sort  query     string     false  "Sort query"
 // @Success      200  {array}   ClientPage
-// @Router       /v1/arc/admin/clients [get]
+// @Router       /v1/ark/admin/clients [get]
 func (h *ClientHandler) FindAll(c *gin.Context) {
 	lq, apiErr := helpers.CreateListingQuery(c, h.parser, listing.ClientFilter, listing.ClientSort)
 	if apiErr != nil {
@@ -59,7 +59,7 @@ func (h *ClientHandler) FindAll(c *gin.Context) {
 // @Produce      json
 // @Param        clientId   path      string  true  "Client ID"
 // @Success      200  {array}   model.Client
-// @Router       /v1/arc/admin/clients/{clientId} [get]
+// @Router       /v1/ark/admin/clients/{clientId} [get]
 func (h *ClientHandler) FindByID(c *gin.Context) {
 	UID, err := helpers.ExtractID(c, "clientId")
 	if err != nil {
@@ -83,7 +83,7 @@ func (h *ClientHandler) FindByID(c *gin.Context) {
 // @Produce      json
 // @Param        client  body  model.ClientRequest  true  "Client data"
 // @Success      201  {object}  model.Client
-// @Router       /v1/arc/admin/clients [post]
+// @Router       /v1/ark/admin/clients [post]
 func (h *ClientHandler) Create(c *gin.Context) {
 	var input model.ClientRequest
 	err := c.ShouldBindJSON(&input)
@@ -109,7 +109,7 @@ func (h *ClientHandler) Create(c *gin.Context) {
 // @Param        client  body  model.ClientRequest  true  "Client data"
 // @Param        clientId   path      string  true  "Client ID"
 // @Success      200  {object}  model.Client
-// @Router       /v1/arc/admin/clients/{clientId} [put]
+// @Router       /v1/ark/admin/clients/{clientId} [put]
 func (h *ClientHandler) Update(c *gin.Context) {
 	var input model.ClientRequest
 	err := c.ShouldBindJSON(&input)
@@ -139,7 +139,7 @@ func (h *ClientHandler) Update(c *gin.Context) {
 // @Produce      json
 // @Param        clientId   path      string  true  "Client ID"
 // @Success      204  {string}  string  "No Content"
-// @Router       /v1/arc/admin/clients/{clientId} [delete]
+// @Router       /v1/ark/admin/clients/{clientId} [delete]
 func (h *ClientHandler) Delete(c *gin.Context) {
 	UID, err := helpers.ExtractID(c, "clientId")
 	if err != nil {

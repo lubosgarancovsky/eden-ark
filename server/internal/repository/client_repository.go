@@ -33,7 +33,7 @@ func (r *ClientRepository) FindAll(lq *list.ListingQuery) ([]model.Client, int64
 	return items, total, nil
 }
 
-func (r *ClientRepository) FindByID(clientID uuid.UUID) (*model.Client, *errors.APIError) {
+func (r *ClientRepository) FindByID(clientID uuid.UUID) (*model.Client, error) {
 	var result model.Client
 	if err := r.db.Model(&model.Client{}).Where("id = ?", clientID).First(&result).Error; err != nil {
 		return nil, errors.Wrap(errors.ErrInternalServer, err)
@@ -41,14 +41,14 @@ func (r *ClientRepository) FindByID(clientID uuid.UUID) (*model.Client, *errors.
 	return &result, nil
 }
 
-func (r *ClientRepository) Insert(client *model.Client) (*model.Client, *errors.APIError) {
+func (r *ClientRepository) Insert(client *model.Client) (*model.Client, error) {
 	if err := r.db.Clauses(clause.Returning{}).Create(client).Error; err != nil {
 		return nil, errors.Wrap(errors.ErrInternalServer, err)
 	}
 	return client, nil
 }
 
-func (r *ClientRepository) Update(client *model.Client) (*model.Client, *errors.APIError) {
+func (r *ClientRepository) Update(client *model.Client) (*model.Client, error) {
 	result := r.db.Clauses(clause.Returning{}).Where("id = ?", client.ID).Updates(&client)
 	if result.Error != nil {
 		return nil, errors.Wrap(errors.ErrInternalServer, result.Error)
@@ -59,7 +59,7 @@ func (r *ClientRepository) Update(client *model.Client) (*model.Client, *errors.
 	return client, nil
 }
 
-func (r *ClientRepository) Delete(clientID uuid.UUID) *errors.APIError {
+func (r *ClientRepository) Delete(clientID uuid.UUID) error {
 	result := r.db.Where("id = ?", clientID).Delete(&model.Client{})
 	if result.Error != nil {
 		return errors.Wrap(errors.ErrInternalServer, result.Error)

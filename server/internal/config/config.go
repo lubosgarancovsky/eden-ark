@@ -7,8 +7,19 @@ import (
 )
 
 type Config struct {
-	Port  int    `field:"PORT" default:"9091"`
-	DBUrl string `field:"DB_URL"`
+	Port             int    `field:"PORT" default:"9091"`
+	PublicURL        string `field:"PUBLIC_URL"`
+	DBUrl            string `field:"DB_URL"`
+	PrivateKeyPath   string `field:"PRIVATE_KEY_PATH"`
+	PublicKeyPath    string `field:"PUBLIC_KEY_PATH"`
+	Issuer           string `field:"ISSUER"`
+	AccessExp        int    `field:"ACCESS_EXP"`
+	RefreshExp       int    `field:"REFRESH_EXPS"`
+	SessionExp       int    `field:"SESSION_EXP"`
+	SMTPHost         string `field:"SMTP_HOST"`
+	SMTPPort         int    `field:"SMTP_PORT"`
+	SMTPFrom         string `field:"SMTP_FROM"`
+	RecoveryTokenExp int    `field:"RECOVERY_TOKEN_EXP"`
 }
 
 func LoadConfig() *Config {
