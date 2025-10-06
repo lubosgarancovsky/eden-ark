@@ -54,6 +54,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	oauth2Handler := handler.NewOAuth2Handler(oauth2Service)
 
 	v1 := r.Group("/v1/ark")
+	protected := v1.Group("/", middleware.AuthMiddleware())
 
 	// OAuth2 endpoints
 	oauth2 := r.Group("/oauth2")
@@ -61,9 +62,8 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		oauth2.GET("/authorize", oauth2Handler.Authorize)
 		oauth2.POST("/token", oauth2Handler.Token)
 		oauth2.POST("/login", oauth2Handler.Login)
+		oauth2.GET("/logout", oauth2Handler.Logout)
 	}
-
-	protected := v1.Group("/", middleware.AuthMiddleware())
 
 	// API endpoints
 	adminClient := protected.Group("/admin")

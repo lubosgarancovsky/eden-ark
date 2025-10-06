@@ -7,9 +7,9 @@ type Props = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButt
 
 const Button: FC<Props> = ({children, variant = 'primary', className, ...props}) => {
  return (
-  <button className={cn("px-5 py-3 rounded-full cursor-pointer font-medium", {
-      "bg-blue-700 font-medium hover:bg-blue-600 disabled:bg-neutral-700/40 disabled:text-neutral-400": variant === 'primary',
-      "bg-neutral-900 hover:bg-neutral-400/15 text-neutral-100": variant === 'secondary'
+  <button className={cn("text-sm px-4 py-2.5 rounded-full cursor-pointer font-medium", {
+      "bg-blue-700 font-medium hover:bg-blue-600 disabled:bg-black/20 disabled:text-neutral-400": variant === 'primary',
+      "bg-transparent hover:bg-black/20 text-neutral-100": variant === 'secondary'
   }, className)} {...props}>
       {children}
   </button>

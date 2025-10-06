@@ -8,7 +8,7 @@ const POST = async (url: string, body: string) => {
     const result = await fetch(url, { method: 'POST', body } );
     if (!result.ok || result.status > 299) {
         const errorBody = await result.json();
-        throw new Error(errorBody.message ?? "Unexpected error has occurred. Please try again later.");
+        throw new Error(errorBody.message ?? "Unexpected error has occurred");
     }
 
     try {

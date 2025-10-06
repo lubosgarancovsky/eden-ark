@@ -1,11 +1,17 @@
 import React, {ChangeEvent, useState} from "react";
 import {useSearchParams} from "react-router";
 import {useSubmit} from "./use-submit";
+import { useCountdown } from "./use-countdown.ts";
 
 const URI = '/v1/ark/users/reset-password';
 
 export const useChangePassword = () => {
     const [params] = useSearchParams();
+
+    const token = params.get("token");
+    const expiresAt = params.get("expiresAt");
+
+    const { timeLeft, percentage} = useCountdown(expiresAt ?? "");
 
     const { state, error, submit } = useSubmit({
         url: URI
@@ -21,8 +27,6 @@ export const useChangePassword = () => {
         const password = formData.get('password');
         const password2 = formData.get('password2');
 
-        const token = params.get('token') ?? "";
-
         if (password === password2) {
             submit({ token, password });
         }
@@ -36,5 +40,5 @@ export const useChangePassword = () => {
         }
     }
 
-    return { state, error, password, password2, expiresAt: params.get("expiresAt"), onSubmit, onPasswordChange }
+    return { state, error, password, password2, timeLeft, percentage, expiresAt, onSubmit, onPasswordChange }
 }
