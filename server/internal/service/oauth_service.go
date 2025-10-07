@@ -264,7 +264,7 @@ func (s *OAuthService) AccessTokenClaims(client *model.Client, user *model.User,
 	return jwt.MapClaims{
 		"iss":       s.cfg.Issuer,
 		"sub":       user.ID.String(),
-		"aud":       "",
+		"aud":       "", // TODO: Add address of API gateway
 		"exp":       time.Now().Add(time.Duration(s.cfg.AccessExp) * time.Second).Unix(),
 		"iat":       time.Now().Unix(),
 		"scope":     query.Scope,

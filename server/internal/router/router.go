@@ -72,7 +72,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		adminClient.GET("/clients/:clientId", clientHandler.FindByID)
 		adminClient.POST("/clients", clientHandler.Create)
 		adminClient.PUT("/clients/:clientId", clientHandler.Update)
-		adminClient.DELETE("/admin/clients/:clientId", clientHandler.Delete)
+		adminClient.DELETE("/clients/:clientId", clientHandler.Delete)
 	}
 
 	adminClientSecret := adminClient.Group("/clients/:clientId/secrets")
