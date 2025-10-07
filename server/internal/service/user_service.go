@@ -8,7 +8,7 @@ import (
 	"github.com/lubosgarancovsky/eden-arc/internal/config"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -119,7 +119,7 @@ func (s *UserService) ResetPassword(tokenString string, password string) error {
 		return err
 	}
 	if token.UserID != user.ID {
-		return errors.ErrBadRequest.WithMessage("invalid token")
+		return api_err.ErrBadRequest.WithMessage("invalid token")
 	}
 
 	passwordHash, err := s.HashPassword(password)

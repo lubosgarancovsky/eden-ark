@@ -7,8 +7,8 @@ import (
 	"github.com/lubosgarancovsky/eden-arc/internal/config"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
-	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
+	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit/kit"
 )
 
 type RecoveryTokenService struct {
@@ -25,9 +25,9 @@ func (s *RecoveryTokenService) FindOne(token string) (*model.RecoveryToken, erro
 }
 
 func (s *RecoveryTokenService) Insert(userID uuid.UUID, recoveryType string, metadata string) (*model.RecoveryToken, error) {
-	token := helpers.SHA256(32)
+	token := kit.SHA256(32)
 	if token == "" {
-		return nil, errors.ErrInternalServer
+		return nil, api_err.ErrInternalServer
 	}
 
 	recoveryToken := &model.RecoveryToken{

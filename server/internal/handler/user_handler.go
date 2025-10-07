@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/service"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 )
 
 type UserHandler struct {
@@ -18,7 +18,7 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 func (h *UserHandler) RequestResetPassword(c *gin.Context) {
 	var input model.EmailRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(errors.Wrap(errors.ErrBadRequest, err))
+		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
 		return
 	}
 
@@ -33,7 +33,7 @@ func (h *UserHandler) RequestResetPassword(c *gin.Context) {
 func (h *UserHandler) ResetPassword(c *gin.Context) {
 	var input model.PasswordRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(errors.Wrap(errors.ErrBadRequest, err))
+		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
 		return
 	}
 

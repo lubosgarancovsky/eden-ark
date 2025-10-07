@@ -12,8 +12,9 @@ import (
 	"github.com/lubosgarancovsky/eden-arc/internal/config"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
-	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
 	"github.com/lubosgarancovsky/eden-arc/pkg/utils"
+	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit/kit"
 )
 
 type OAuthService struct {
@@ -46,12 +47,12 @@ func NewOAuthService(
 // ValidateClientAtToken Validate client bound parameters for all token requests
 func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Client, error) {
 	if query.ClientID == "" {
-		return nil, errors.ErrBadRequest.WithMessage("invalid client id")
+		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	clientID, err := uuid.Parse(query.ClientID)
 	if err != nil {
-		return nil, errors.ErrBadRequest.WithMessage("invalid client id")
+		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	// Client exists check
@@ -62,12 +63,12 @@ func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Cl
 
 	// Redirect URI check
 	if !utils.Includes(client.RedirectUris, query.RedirectURI) {
-		return client, errors.ErrBadRequest.WithMessage("invalid redirect uri")
+		return client, api_err.ErrBadRequest.WithMessage("invalid redirect uri")
 	}
 
 	// Grant type check
 	if !utils.Includes(client.GrantTypes, query.GrantType) {
-		return client, errors.ErrBadRequest.WithMessage("invalid grant type")
+		return client, api_err.ErrBadRequest.WithMessage("invalid grant type")
 	}
 
 	// Client secret check for confidential clients
@@ -81,12 +82,12 @@ func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Cl
 // ValidateClientAtAuthorize Validate client-bound parameters for all authorized requests
 func (s *OAuthService) ValidateClientAtAuthorize(query *model.AuthorizeQuery) (*model.Client, error) {
 	if query.ClientID == "" {
-		return nil, errors.ErrBadRequest.WithMessage("invalid client id")
+		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	clientID, err := uuid.Parse(query.ClientID)
 	if err != nil {
-		return nil, errors.ErrBadRequest.WithMessage("invalid client id")
+		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	// Client exists check
@@ -97,19 +98,19 @@ func (s *OAuthService) ValidateClientAtAuthorize(query *model.AuthorizeQuery) (*
 
 	// Redirect URI check
 	if !utils.Includes(client.RedirectUris, query.RedirectURI) {
-		return client, errors.ErrBadRequest.WithMessage("invalid redirect uri")
+		return client, api_err.ErrBadRequest.WithMessage("invalid redirect uri")
 	}
 
 	// PKCE Check
 	if !client.IsConfidential {
 		if query.CodeChallenge == "" {
-			return client, errors.ErrBadRequest.WithMessage("code_challenge is required")
+			return client, api_err.ErrBadRequest.WithMessage("code_challenge is required")
 		}
 		if query.CodeChallengeMethod == "" {
-			return client, errors.ErrBadRequest.WithMessage("code_challenge_method is required")
+			return client, api_err.ErrBadRequest.WithMessage("code_challenge_method is required")
 		}
 		if query.CodeChallengeMethod == "S256" {
-			return client, errors.ErrBadRequest.WithMessage("code_challenge_method is not supported")
+			return client, api_err.ErrBadRequest.WithMessage("code_challenge_method is not supported")
 		}
 	}
 
@@ -125,7 +126,7 @@ func (s *OAuthService) ValidateUserSession(sessionToken string) (*model.User, *m
 
 	// TODO: Should log out user if session is expired
 	if session.ExpiresAt.Before(time.Now()) {
-		return nil, nil, errors.ErrUnauthorized.WithMessage("session has expired")
+		return nil, nil, api_err.ErrUnauthorized.WithMessage("session has expired")
 	}
 
 	user, err := s.userService.FindByID(session.UserID)
@@ -144,11 +145,11 @@ func (s *OAuthService) ValidateAuthorizationCode(client *model.Client, query *mo
 	}
 
 	if code.ClientID != client.ID {
-		return nil, errors.ErrBadRequest.WithMessage("invalid client id")
+		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	if code.ExpiresAt.Before(time.Now()) {
-		return nil, errors.ErrUnauthorized.WithMessage("code has expired")
+		return nil, api_err.ErrUnauthorized.WithMessage("code has expired")
 	}
 
 	// PKCE check for non confidential clients
@@ -167,11 +168,11 @@ func (s *OAuthService) ValidatePKCE(client *model.Client, code *model.Authorizat
 
 	hash := s.HashCodeVerifier(tokenRequest.CodeVerifier, code.CodeChallengeMethod)
 	if hash == "" {
-		return errors.ErrUnauthorized.WithMessage("invalid code verifier")
+		return api_err.ErrUnauthorized.WithMessage("invalid code verifier")
 	}
 
 	if hash != code.CodeChallenge {
-		return errors.ErrUnauthorized.WithMessage("invalid code verifier")
+		return api_err.ErrUnauthorized.WithMessage("invalid code verifier")
 	}
 
 	return nil
@@ -193,17 +194,17 @@ func (s *OAuthService) ValidateBasicToken(client *model.Client, authHeader strin
 	}
 
 	if authHeader == "" {
-		return nil, errors.ErrUnauthorized.WithMessage("missing authorization header")
+		return nil, api_err.ErrUnauthorized.WithMessage("missing authorization header")
 	}
 
 	parts := strings.Split(authHeader, " ")
 	if parts[0] != "Basic" || len(parts) != 2 {
-		return nil, errors.ErrUnauthorized.WithMessage("invalid authorization header")
+		return nil, api_err.ErrUnauthorized.WithMessage("invalid authorization header")
 	}
 
 	secretString, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
-		return nil, errors.ErrUnauthorized.WithMessage("invalid authorization header")
+		return nil, api_err.ErrUnauthorized.WithMessage("invalid authorization header")
 	}
 
 	secret, err := s.ValidateClientSecret(client, string(secretString))
@@ -215,7 +216,7 @@ func (s *OAuthService) ValidateBasicToken(client *model.Client, authHeader strin
 }
 
 func (s *OAuthService) GenerateTokens(client *model.Client, user *model.User, session *model.Session, query *model.TokenQuery) (*model.JWTResponse, error) {
-	privateKey, err := helpers.LoadPrivateKey(s.cfg.PrivateKeyPath)
+	privateKey, err := kit.LoadPrivateKey(s.cfg.PrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}

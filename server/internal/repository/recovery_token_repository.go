@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -36,7 +36,7 @@ func (r *RecoveryTokenRepository) Delete(token string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return errors.ErrNotFound
+		return api_err.ErrNotFound
 	}
 	return nil
 }

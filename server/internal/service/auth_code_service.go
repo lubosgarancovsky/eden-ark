@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
-	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
+	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit/kit"
 )
 
 type AuthCodeService struct {
@@ -23,14 +23,14 @@ func (s *AuthCodeService) FindByCode(code string) (*model.AuthorizationCode, err
 }
 
 func (s *AuthCodeService) CreateAuthCode(session *model.Session, input *model.AuthorizeQuery) (*model.AuthorizationCode, error) {
-	codeHash := helpers.SHA256(48)
+	codeHash := kit.SHA256(48)
 	if codeHash == "" {
-		return nil, errors.ErrInternalServer
+		return nil, api_err.ErrInternalServer
 	}
 
 	clientID, err := uuid.Parse(input.ClientID)
 	if err != nil {
-		return nil, errors.Wrap(errors.ErrInvalidUUID, err)
+		return nil, api_err.Wrap(api_err.ErrInvalidUUID, err)
 	}
 
 	code := &model.AuthorizationCode{

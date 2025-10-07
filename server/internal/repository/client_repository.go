@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
 	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"github.com/lubosgarancovsky/go-kit/list"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -28,7 +28,7 @@ func (r *ClientRepository) FindAll(lq *list.ListingQuery) ([]model.Client, int64
 
 	items, total, err := helpers.List[model.Client](query, lq)
 	if err != nil {
-		return nil, 0, errors.Wrap(errors.ErrInternalServer, err)
+		return nil, 0, err
 	}
 	return items, total, nil
 }
@@ -36,14 +36,14 @@ func (r *ClientRepository) FindAll(lq *list.ListingQuery) ([]model.Client, int64
 func (r *ClientRepository) FindByID(clientID uuid.UUID) (*model.Client, error) {
 	var result model.Client
 	if err := r.db.Model(&model.Client{}).Where("id = ?", clientID).First(&result).Error; err != nil {
-		return nil, errors.Wrap(errors.ErrInternalServer, err)
+		return nil, err
 	}
 	return &result, nil
 }
 
 func (r *ClientRepository) Insert(client *model.Client) (*model.Client, error) {
 	if err := r.db.Clauses(clause.Returning{}).Create(client).Error; err != nil {
-		return nil, errors.Wrap(errors.ErrInternalServer, err)
+		return nil, err
 	}
 	return client, nil
 }
@@ -51,10 +51,10 @@ func (r *ClientRepository) Insert(client *model.Client) (*model.Client, error) {
 func (r *ClientRepository) Update(client *model.Client) (*model.Client, error) {
 	result := r.db.Clauses(clause.Returning{}).Where("id = ?", client.ID).Updates(&client)
 	if result.Error != nil {
-		return nil, errors.Wrap(errors.ErrInternalServer, result.Error)
+		return nil, api_err.Wrap(api_err.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return nil, errors.Wrap(errors.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Client with id %s does not exist", client.ID))
+		return nil, api_err.Wrap(api_err.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Client with id %s does not exist", client.ID))
 	}
 	return client, nil
 }
@@ -62,10 +62,10 @@ func (r *ClientRepository) Update(client *model.Client) (*model.Client, error) {
 func (r *ClientRepository) Delete(clientID uuid.UUID) error {
 	result := r.db.Where("id = ?", clientID).Delete(&model.Client{})
 	if result.Error != nil {
-		return errors.Wrap(errors.ErrInternalServer, result.Error)
+		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return errors.ErrNotFound.WithMessage(fmt.Sprintf("Client with id %s does not exist", clientID))
+		return api_err.ErrNotFound.WithMessage(fmt.Sprintf("Client with id %s does not exist", clientID))
 	}
 	return nil
 }

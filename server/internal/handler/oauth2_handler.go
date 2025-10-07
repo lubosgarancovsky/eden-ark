@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/service"
-	errors2 "github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 )
 
 type OAuth2Handler struct {
@@ -92,7 +92,7 @@ func (h *OAuth2Handler) Token(c *gin.Context) {
 		h.handleRefreshGrantType(c, client, tokenQuery)
 		return
 	default:
-		c.Error(errors2.ErrBadRequest.WithMessage("unsupported grant type"))
+		c.Error(api_err.ErrBadRequest.WithMessage("unsupported grant type"))
 		return
 	}
 
@@ -194,27 +194,27 @@ func (h *OAuth2Handler) handleRefreshGrantType(c *gin.Context, client *model.Cli
 
 func verifyAuthorizeQuery(query *model.AuthorizeQuery) error {
 	if query.ResponseType == "" {
-		return errors2.ErrBadRequest.WithMessage("response_type is required")
+		return api_err.ErrBadRequest.WithMessage("response_type is required")
 	}
 
 	if query.ResponseType != "code" {
-		return errors2.ErrBadRequest.WithMessage("unsupported response_type value")
+		return api_err.ErrBadRequest.WithMessage("unsupported response_type value")
 	}
 
 	if query.ClientID == "" {
-		return errors2.ErrBadRequest.WithMessage("client_id is required")
+		return api_err.ErrBadRequest.WithMessage("client_id is required")
 	}
 
 	if query.RedirectURI == "" {
-		return errors2.ErrBadRequest.WithMessage("redirect_uri is required")
+		return api_err.ErrBadRequest.WithMessage("redirect_uri is required")
 	}
 
 	if query.State == "" {
-		return errors2.ErrBadRequest.WithMessage("state is required")
+		return api_err.ErrBadRequest.WithMessage("state is required")
 	}
 
 	if query.Scope == "" {
-		return errors2.ErrBadRequest.WithMessage("scope is required")
+		return api_err.ErrBadRequest.WithMessage("scope is required")
 	}
 
 	return nil

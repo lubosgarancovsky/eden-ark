@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"github.com/lubosgarancovsky/go-kit/filter"
 	"github.com/lubosgarancovsky/go-kit/list"
 	"github.com/lubosgarancovsky/go-kit/rsql"
@@ -16,7 +16,7 @@ func CreateListingQuery(c *gin.Context, parser *rsql.Parser, filterMap map[strin
 	var qp list.QueryParms
 	err := c.ShouldBindQuery(&qp)
 	if err != nil {
-		return nil, errors.Wrap(errors.ErrBadRequest, err).WithMessage("Invalid query parameters")
+		return nil, api_err.Wrap(api_err.ErrBadRequest, err).WithMessage("Invalid query parameters")
 	}
 
 	var limit = 10
@@ -40,12 +40,12 @@ func CreateListingQuery(c *gin.Context, parser *rsql.Parser, filterMap map[strin
 	if qp.Filter != "" {
 		ast, err := parser.Parse(qp.Filter)
 		if err != nil {
-			return nil, errors.Wrap(errors.ErrBadRequest, err).WithMessage("Invalid filter parameter")
+			return nil, api_err.Wrap(api_err.ErrBadRequest, err).WithMessage("Invalid filter parameter")
 		}
 
 		fil, err := filter.BuildFilter(ast, filterMap)
 		if err != nil {
-			return nil, errors.Wrap(errors.ErrBadRequest, err).WithMessage("Invalid filter parameter")
+			return nil, api_err.Wrap(api_err.ErrBadRequest, err).WithMessage("Invalid filter parameter")
 		}
 
 		lq.Filter = fil
@@ -54,7 +54,7 @@ func CreateListingQuery(c *gin.Context, parser *rsql.Parser, filterMap map[strin
 	if qp.Sort != "" {
 		srt, err := sort.BuildSort(qp.Sort, sortMap)
 		if err != nil {
-			return nil, errors.Wrap(errors.ErrBadRequest, err).WithMessage("Invalid sort parameter")
+			return nil, api_err.Wrap(api_err.ErrBadRequest, err).WithMessage("Invalid sort parameter")
 		}
 
 		lq.Sort = srt
@@ -66,12 +66,12 @@ func CreateListingQuery(c *gin.Context, parser *rsql.Parser, filterMap map[strin
 func ExtractID(c *gin.Context, name string) (uuid.UUID, error) {
 	ID, ok := c.Params.Get(name)
 	if !ok {
-		return uuid.Nil, errors.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", name))
+		return uuid.Nil, api_err.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", name))
 	}
 
 	UID, err := uuid.Parse(ID)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(errors.ErrInvalidUUID.WithMessage(fmt.Sprintf("%s is not a valid UUID", ID)), err)
+		return uuid.Nil, api_err.Wrap(api_err.ErrInvalidUUID.WithMessage(fmt.Sprintf("%s is not a valid UUID", ID)), err)
 	}
 
 	return UID, nil

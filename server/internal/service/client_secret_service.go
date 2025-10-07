@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"github.com/lubosgarancovsky/go-kit/list"
 
 	"crypto/rand"
@@ -52,7 +52,7 @@ func (s *ClientSecretService) ValidateSecret(clientID uuid.UUID, secretStr strin
 	}
 
 	if secret.ExpiresAt.Before(time.Now()) {
-		return nil, errors.ErrUnauthorized.WithMessage("secret expired")
+		return nil, api_err.ErrUnauthorized.WithMessage("secret expired")
 	}
 
 	return secret, nil
@@ -61,7 +61,7 @@ func (s *ClientSecretService) ValidateSecret(clientID uuid.UUID, secretStr strin
 func (s *ClientSecretService) Create(clientID uuid.UUID, input *model.ClientSecretRequest) (*model.ClientSecret, error) {
 	secretString, err := generateClientSecret(32)
 	if err != nil {
-		return nil, errors.Wrap(errors.ErrInternalServer, err)
+		return nil, api_err.Wrap(api_err.ErrInternalServer, err)
 	}
 
 	secret := &model.ClientSecret{

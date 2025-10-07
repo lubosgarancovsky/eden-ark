@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"log"
+	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/google/uuid"
+	"github.com/lubosgarancovsky/go-kit/api_err"
+	"gorm.io/gorm"
 )
 
 var serviceID = "eden-arc"
@@ -17,29 +18,28 @@ func ErrorMiddleware() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			lastErr := c.Errors.Last().Err
-			correlationID := c.GetHeader("correlationId")
-			currentTime := time.Now().Format(time.RFC3339)
+			correlationID, err := uuid.Parse(c.GetHeader("correlationId"))
+			if err != nil {
+				correlationID = uuid.Nil
+			}
 
-			if apiErr, ok := lastErr.(*errors.APIError); ok {
-				log.Printf("[ERROR] %d %s \"%s\": %v", apiErr.HTTPStatus, apiErr.Code, apiErr.Message, apiErr.Error())
-				c.JSON(apiErr.HTTPStatus, gin.H{
-					"code":          apiErr.Code,
-					"message":       apiErr.Message,
-					"correlationId": correlationID,
-					"serviceId":     serviceID,
-					"timestamp":     currentTime,
-				})
+			var apiErr *api_err.ApiError
+			if errors.As(lastErr, &apiErr) {
+				apiErr.Log()
+				c.JSON(apiErr.HTTPStatus, apiErr.ToJSON(serviceID, correlationID.String()))
 				return
 			}
 
-			log.Printf("[ERROR] 500 INTERNAL_SERVER_ERROR \"Internal server error\": %v", lastErr)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"code":          "INTERNAL_SERVER_ERROR",
-				"message":       "Internal server error",
-				"correlationId": correlationID,
-				"serviceId":     serviceID,
-				"timestamp":     currentTime,
-			})
+			if errors.Is(lastErr, gorm.ErrRecordNotFound) {
+				apiErr := api_err.ErrNotFound
+				apiErr.Log()
+				c.JSON(apiErr.HTTPStatus, apiErr.ToJSON(serviceID, correlationID.String()))
+				return
+			}
+
+			unknownError := api_err.Unknown(lastErr)
+			unknownError.Log()
+			c.JSON(http.StatusInternalServerError, unknownError.ToJSON(serviceID, correlationID.String()))
 		}
 	}
 }

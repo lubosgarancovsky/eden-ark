@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
-	"github.com/lubosgarancovsky/eden-arc/pkg/errors"
+	"github.com/lubosgarancovsky/go-kit/api_err"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -53,7 +53,7 @@ func (r *UserRepository) Update(user *model.User) (*model.User, error) {
 		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return nil, errors.ErrNotFound
+		return nil, api_err.ErrNotFound
 	}
 	return user, nil
 }
@@ -61,10 +61,10 @@ func (r *UserRepository) Update(user *model.User) (*model.User, error) {
 func (r *UserRepository) Delete(id uuid.UUID) error {
 	result := r.db.Model(&model.User{}).Where("id = ?", id).Delete(&model.User{})
 	if result.Error != nil {
-		return errors.Wrap(errors.ErrInternalServer, result.Error)
+		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return errors.ErrNotFound
+		return api_err.ErrNotFound
 	}
 	return nil
 }
