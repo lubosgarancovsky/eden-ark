@@ -19,3 +19,12 @@ type EmailChangeTemplate struct {
 	ExpiresAt        string
 	ExpiresInMinutes int
 }
+
+type NewUserTemplate struct {
+	Name     string
+	Email    string
+	Password string
+	AppName  string
+	LoginURL string
+	Year     int
+}

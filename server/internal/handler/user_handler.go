@@ -105,7 +105,18 @@ func (h *UserHandler) Delete(c *gin.Context) {
 }
 
 func (h *UserHandler) GeneratePassword(c *gin.Context) {
+	ID, err := helpers.ExtractID(c, "userId")
+	if err != nil {
+		c.Error(err)
+		return
+	}
 
+	if err := h.s.GeneratePassword(ID); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(204)
 }
 
 func (h *UserHandler) RequestResetPassword(c *gin.Context) {

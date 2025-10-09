@@ -9,6 +9,7 @@ import (
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/repository"
 	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit/kit"
 	"github.com/lubosgarancovsky/go-kit/list"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -196,6 +197,42 @@ func (s *UserService) RequestEmailChange(userID uuid.UUID) error {
 	}
 
 	templatePath := "templates/change-email.html"
+	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", templatePath, templateData)
+}
+
+func (s *UserService) GeneratePassword(userID uuid.UUID) error {
+	user, err := s.FindByID(userID)
+	if err != nil {
+		return err
+	}
+
+	password, err := kit.GeneratePassword(12)
+	if err != nil {
+		return err
+	}
+
+	passwordHash, err := s.HashPassword(password)
+
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = passwordHash
+	_, err = s.r.Update(user)
+	if err != nil {
+		return err
+	}
+
+	templateData := &model.NewUserTemplate{
+		Name:     fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Email:    user.Email,
+		Password: password,
+		AppName:  "Eden",
+		LoginURL: fmt.Sprintf("%s/login", s.cfg.PublicURL),
+		Year:     time.Now().Year(),
+	}
+
+	templatePath := "templates/new-user-credentials.html"
 	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", templatePath, templateData)
 }
 
