@@ -47,7 +47,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	// User
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(cfg, userRepo, recoveryTokenService, emailService)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(parser, userService)
 
 	// OAuth2
 	oauth2Service := service.NewOAuthService(cfg, clientService, clientSecretService, sessionService, userService, authCodeService)
@@ -55,6 +55,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 	v1 := r.Group("/v1/ark")
 	protected := v1.Group("/", middleware.AuthMiddleware())
+	admin := protected.Group("/admin", middleware.RoleMiddleware([]string{"admin"}))
 
 	// OAuth2 endpoints
 	oauth2 := r.Group("/oauth2")
@@ -63,16 +64,17 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		oauth2.POST("/token", oauth2Handler.Token)
 		oauth2.POST("/login", oauth2Handler.Login)
 		oauth2.GET("/logout", oauth2Handler.Logout)
+		oauth2.GET("/profile", middleware.AuthMiddleware(), oauth2Handler.Profile)
 	}
 
 	// API endpoints
-	adminClient := protected.Group("/admin")
+	adminClient := admin.Group("/clients")
 	{
-		adminClient.GET("/clients", clientHandler.FindAll)
-		adminClient.GET("/clients/:clientId", clientHandler.FindByID)
-		adminClient.POST("/clients", clientHandler.Create)
-		adminClient.PUT("/clients/:clientId", clientHandler.Update)
-		adminClient.DELETE("/clients/:clientId", clientHandler.Delete)
+		adminClient.GET("/", clientHandler.FindAll)
+		adminClient.GET("/:clientId", clientHandler.FindByID)
+		adminClient.POST("/", clientHandler.Create)
+		adminClient.PUT("/:clientId", clientHandler.Update)
+		adminClient.DELETE("/:clientId", clientHandler.Delete)
 	}
 
 	adminClientSecret := adminClient.Group("/clients/:clientId/secrets")
@@ -82,14 +84,41 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		adminClientSecret.DELETE("/:clientSecretId", clientSecretHandler.Delete)
 	}
 
-	userUser := v1.Group("/users")
+	adminUser := admin.Group("/users")
 	{
-		userUser.POST("/request-reset-password", userHandler.RequestResetPassword)
-		userUser.POST("/reset-password", userHandler.ResetPassword)
+		adminUser.GET("/", userHandler.FindAll)
+		adminUser.GET("/:userId", userHandler.FindByID)
+		adminUser.POST("/", userHandler.Create)
+		adminUser.PUT("/:userId", userHandler.Update)
+		adminUser.DELETE("/:userId", userHandler.Delete)
+		adminUser.DELETE("/:userId/generate-password", userHandler.GeneratePassword)
 	}
 
-	// Swagger
+	protectedUser := protected.Group("/users")
 	{
-		r.GET("/api/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		protectedUser.GET("/:userId", oauth2Handler.Profile)
+		protectedUser.PUT("/:userId", userHandler.Update)
+		protectedUser.DELETE("/:userId", userHandler.Delete)
+		protectedUser.POST("/request-change-email", userHandler.RequestChangeEmail)
+		protectedUser.POST("/change-email", userHandler.ChangeEmail)
+	}
+
+	publicUser := v1.Group("/users")
+	{
+
+		publicUser.GET("/username-available", userHandler.IsUsernameAvailable)
+		publicUser.GET("/email-available", userHandler.IsUsernameAvailable)
+		publicUser.POST("/request-reset-password", userHandler.RequestResetPassword)
+		publicUser.POST("/reset-password", userHandler.ResetPassword)
+	}
+
+	// Internal
+	{
+		r.GET("/internal/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		r.GET("/internal/health", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"status": "ok",
+			})
+		})
 	}
 }

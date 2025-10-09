@@ -1,9 +1,13 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
+	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
 	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit/list"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -14,6 +18,19 @@ type UserRepository struct {
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
+}
+
+func (r *UserRepository) FindAll(lq *list.ListingQuery) ([]model.User, int64, error) {
+	query := r.db.Model(&model.User{})
+	if lq.Filter != nil {
+		query = query.Where(lq.Filter.Query, lq.Filter.Args...)
+	}
+
+	items, total, err := helpers.List[model.User](query, lq)
+	if err != nil {
+		return nil, 0, err
+	}
+	return items, total, nil
 }
 
 func (r *UserRepository) FindByID(id uuid.UUID) (*model.User, error) {
@@ -58,8 +75,22 @@ func (r *UserRepository) Update(user *model.User) (*model.User, error) {
 	return user, nil
 }
 
+func (r *UserRepository) MarkAsDeleted(id uuid.UUID) error {
+	result := r.db.Model(&model.User{}).Where("id = ?", id).Updates(map[string]time.Time{
+		"deleted_at": time.Now(),
+	})
+
+	if result.Error != nil {
+		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return api_err.ErrNotFound
+	}
+	return nil
+}
+
 func (r *UserRepository) Delete(id uuid.UUID) error {
-	result := r.db.Model(&model.User{}).Where("id = ?", id).Delete(&model.User{})
+	result := r.db.Where("id = ?", id).Delete(&model.User{})
 	if result.Error != nil {
 		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
 	}

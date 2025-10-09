@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/eden-arc/internal/service"
+	"github.com/lubosgarancovsky/eden-arc/pkg/helpers"
 	"github.com/lubosgarancovsky/go-kit/api_err"
 )
 
@@ -132,6 +133,22 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 	c.SetCookie(h.sessionCookieName, session.SessionToken, maxAge, "/", "", false, true)
 	c.Redirect(302, string(returnTo))
 	return
+}
+
+func (h *OAuth2Handler) Profile(c *gin.Context) {
+	userCtx, err := helpers.GetUserContext(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	user, err := h.oauthService.GetProfile(userCtx.ID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, user)
 }
 
 func (h *OAuth2Handler) handleAuthCodeGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {

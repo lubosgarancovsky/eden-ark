@@ -9,3 +9,13 @@ type PasswordResetTemplate struct {
 	ExpiresAt        string
 	ExpiresInMinutes int
 }
+
+type EmailChangeTemplate struct {
+	Name             string
+	AppName          string
+	Year             int
+	Token            string
+	ConfirmURL       string
+	ExpiresAt        string
+	ExpiresInMinutes int
+}

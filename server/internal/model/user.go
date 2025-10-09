@@ -17,6 +17,11 @@ type EmailRequest struct {
 	Email string `json:"email"`
 }
 
+type EmailChangeRequest struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
+}
+
 type PasswordRequest struct {
 	Password string `json:"password"`
 	Token    string `json:"token"`

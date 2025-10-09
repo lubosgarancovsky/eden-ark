@@ -1,5 +1,12 @@
 package model
 
+import "github.com/google/uuid"
+
+type UserContext struct {
+	ID   uuid.UUID
+	Role string
+}
+
 type AuthorizeQuery struct {
 	ResponseType        string `form:"response_type"`
 	ClientID            string `form:"client_id"`

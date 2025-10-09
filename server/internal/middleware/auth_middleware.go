@@ -3,13 +3,9 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/go-kit/api_err"
 )
-
-type UserContext struct {
-	ID   uuid.UUID
-	Role string
-}
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -34,7 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", &UserContext{ID: userUUID, Role: userRole})
+		c.Set("user", &model.UserContext{ID: userUUID, Role: userRole})
 		c.Next()
 	}
 }

@@ -292,6 +292,10 @@ func (s *OAuthService) RefreshTokenClaims(client *model.Client, user *model.User
 	}
 }
 
+func (s *OAuthService) GetProfile(userID uuid.UUID) (*model.User, error) {
+	return s.userService.FindByID(userID)
+}
+
 func (s *OAuthService) SignToken(claims jwt.MapClaims, privateKey *rsa.PrivateKey) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	return token.SignedString(privateKey)

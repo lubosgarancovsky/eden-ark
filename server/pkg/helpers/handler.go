@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/lubosgarancovsky/eden-arc/internal/model"
 	"github.com/lubosgarancovsky/go-kit/api_err"
 	"github.com/lubosgarancovsky/go-kit/filter"
 	"github.com/lubosgarancovsky/go-kit/list"
@@ -75,4 +76,18 @@ func ExtractID(c *gin.Context, name string) (uuid.UUID, error) {
 	}
 
 	return UID, nil
+}
+
+func GetUserContext(c *gin.Context) (*model.UserContext, error) {
+	user, ok := c.Get("user")
+	if !ok {
+		return nil, api_err.ErrUnauthorized
+	}
+
+	userCtx, ok := user.(*model.UserContext)
+	if !ok {
+		return nil, api_err.ErrUnauthorized
+	}
+
+	return userCtx, nil
 }
