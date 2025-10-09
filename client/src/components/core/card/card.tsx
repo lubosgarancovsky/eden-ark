@@ -4,13 +4,14 @@ type Props = {
     title: string;
     description: string;
     children?: ReactNode;
+    disableLogo?: boolean;
 };
 
-const Card: FC<Props> = ({ title, description, children}) => {
+const Card: FC<Props> = ({ title, description, children, disableLogo = false}) => {
  return (
-     <div className="flex flex-col gap-4 rounded-2xl p-8 bg-black/20 backdrop-blur-md shadow-lg relative">
-         <div className="w-16 h-16 bg-blue-700 rounded-full" />
-         <div className="flex lg:flex-row flex-col gap-8">
+     <div className="flex flex-col gap-4 rounded-2xl p-8 bg-zinc-800 shadow-lg relative">
+         {!disableLogo && <div className="w-16 h-16 bg-blue-700 rounded-full" />}
+         <div className="flex flex-col gap-8">
              <div className="flex flex-col gap-2 lg:min-w-[24rem]">
                  <h1>{title}</h1>
                  <p className="text-muted-foreground">{description}</p>

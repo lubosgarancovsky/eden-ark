@@ -53,25 +53,25 @@ const ForgotPasswordPage: FC = () => {
                             A verification link will be sent to your e-mail
                         </p>
 
+                        {error && (
+                            <p className="text-red-500 text-sm">
+                                {error?.message}
+                            </p>
+                        )}
+
                         <div className="flex items-center justify-between gap-8">
                             <a href="/login" className="-ml-4">
                                 <Button type="button" variant="secondary">
                                     Back to login
                                 </Button>
                             </a>
-                            <div className="flex items-center gap-4">
-                                {error && (
-                                    <p className="text-red-500 text-sm">
-                                        {error?.message}
-                                    </p>
-                                )}
-                                <Button
-                                    variant="primary"
-                                    disabled={state === "pending"}
-                                >
-                                    Send verification e-mail
-                                </Button>
-                            </div>
+
+                            <Button
+                                variant="primary"
+                                disabled={state === "pending"}
+                            >
+                                Send verification e-mail
+                            </Button>
                         </div>
                     </form>
                 )}

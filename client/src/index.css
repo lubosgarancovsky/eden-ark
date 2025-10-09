@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-    --color-muted-foreground: oklch(0.8699 0 0)
+    --color-muted-foreground: oklch(0.70 0 0)
 }
 
 html {
@@ -9,7 +9,7 @@ html {
 }
 
 body {
-    @apply bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700
+    @apply bg-zinc-900
 }
 
 h1 {

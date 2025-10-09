@@ -7,16 +7,15 @@ const ResetPasswordPage: FC = () => {
     const {
         password,
         password2,
-        onPasswordChange,
+        handlePasswordChange,
+        mismatch,
+        accent,
         timeLeft,
         percentage,
         state,
         error,
         onSubmit
     } = useChangePassword();
-
-    const mismatch = password !== password2 && password2 != "";
-    const accent = mismatch ? "error" : password2 != "" ? "success" : undefined;
 
     return (
         <Layout>
@@ -46,7 +45,7 @@ const ResetPasswordPage: FC = () => {
                                     name="password"
                                     type="password"
                                     value={password}
-                                    onChange={onPasswordChange("password")}
+                                    onChange={handlePasswordChange("password")}
                                     required
                                 />
                             </div>
@@ -57,7 +56,7 @@ const ResetPasswordPage: FC = () => {
                                     type="password"
                                     value={password2}
                                     accent={accent}
-                                    onChange={onPasswordChange("password2")}
+                                    onChange={handlePasswordChange("repeat-password")}
                                     required
                                 />
                             </div>
@@ -65,7 +64,9 @@ const ResetPasswordPage: FC = () => {
 
                         <div>
                             <div className="flex gap-4 items-center">
-                                {percentage  > 0 ? <Progress value={percentage} /> : (
+                                {percentage > 0 ? (
+                                    <Progress value={percentage} />
+                                ) : (
                                     <p className="text-red-500 text-sm w-full">
                                         Session timed out
                                     </p>
@@ -74,6 +75,11 @@ const ResetPasswordPage: FC = () => {
                             </div>
                         </div>
 
+                        {error && (
+                            <p className="text-red-500 text-sm">
+                                {error?.message}
+                            </p>
+                        )}
 
                         <div className="flex items-center justify-between gap-8">
                             <a href="/login" className="-ml-4">
@@ -81,20 +87,17 @@ const ResetPasswordPage: FC = () => {
                                     Back to login
                                 </Button>
                             </a>
-                            <div className="flex items-center gap-4">
-                                {error && (
-                                    <p className="text-red-500 text-sm">
-                                        {error?.message}
-                                    </p>
-                                )}
 
-                                <Button
-                                    variant="primary"
-                                    disabled={state === "pending" || mismatch || percentage === 0}
-                                >
-                                    Change password
-                                </Button>
-                            </div>
+                            <Button
+                                variant="primary"
+                                disabled={
+                                    state === "pending" ||
+                                    mismatch ||
+                                    percentage === 0
+                                }
+                            >
+                                Change password
+                            </Button>
                         </div>
                     </form>
                 )}
