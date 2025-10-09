@@ -6,7 +6,9 @@ import {
     CreateAccountPage,
     ForgotPasswordPage,
     ResetPasswordPage,
-    IndexPage
+    IndexPage,
+    ErrorPage,
+    NotFoundPage
 } from "./pages";
 import "./index.css";
 
@@ -22,6 +24,8 @@ createRoot(document.getElementById("root")!).render(
                     element={<ForgotPasswordPage />}
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/error" element={<ErrorPage />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </BrowserRouter>
     </StrictMode>
