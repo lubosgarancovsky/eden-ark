@@ -30,17 +30,20 @@ func NewOAuth2Handler(oauthService *service.OAuthService) *OAuth2Handler {
 func (h *OAuth2Handler) Authorize(c *gin.Context) {
 	var authorizeQuery model.AuthorizeQuery
 	if err := c.ShouldBindQuery(&authorizeQuery); err != nil {
-		c.Error(err)
+		//c.Error(err)
+		redirectToError(c, err)
 		return
 	}
 
 	if err := verifyAuthorizeQuery(&authorizeQuery); err != nil {
-		c.Error(err)
+		//c.Error(err)
+		redirectToError(c, err)
 		return
 	}
 
 	if _, err := h.oauthService.ValidateClientAtAuthorize(&authorizeQuery); err != nil {
-		c.Error(err)
+		//c.Error(err)
+		redirectToError(c, err)
 		return
 	}
 
@@ -52,13 +55,15 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 			return
 		}
 
-		c.Error(err)
+		//c.Error(err)
+		redirectToError(c, err)
 		return
 	}
 
 	_, authCode, err := h.oauthService.SaveAuthCode(cookie, &authorizeQuery)
 	if err != nil {
-		c.Error(err)
+		//c.Error(err)
+		redirectToError(c, err)
 		return
 	}
 
@@ -100,8 +105,34 @@ func (h *OAuth2Handler) Token(c *gin.Context) {
 }
 
 func (h *OAuth2Handler) Logout(c *gin.Context) {
-	// TODO: Logout user
-	return
+	cookie, err := c.Request.Cookie(h.sessionCookieName)
+	if err != nil {
+		if errors.Is(err, http.ErrNoCookie) {
+			c.Redirect(302, "/login")
+			return
+		}
+		//c.Error(err)
+		redirectToError(c, err)
+		return
+	}
+
+	err = h.oauthService.DeleteSession(cookie.Value)
+	if err != nil {
+		redirectToError(c, err)
+		return
+	}
+
+	c.SetCookie(
+		h.sessionCookieName,
+		"",
+		-1,
+		"/",
+		"",
+		false,
+		true,
+	)
+
+	c.Redirect(302, "/login")
 }
 
 func (h *OAuth2Handler) Login(c *gin.Context) {
@@ -235,4 +266,8 @@ func verifyAuthorizeQuery(query *model.AuthorizeQuery) error {
 	}
 
 	return nil
+}
+
+func redirectToError(c *gin.Context, err error) {
+	c.Redirect(302, fmt.Sprintf("/error?error=%s", err.Error()))
 }

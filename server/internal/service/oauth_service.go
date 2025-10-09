@@ -319,6 +319,10 @@ func (s *OAuthService) DeleteAuthCode(code *model.AuthorizationCode) error {
 	return s.authCodeService.DeleteAuthCode(code.Code)
 }
 
+func (s *OAuthService) DeleteSession(sessionToken string) error {
+	return s.sessionService.DeleteByToken(sessionToken)
+}
+
 func (s *OAuthService) SaveSession(request *model.LoginRequest, ipAddr string, userAgent string) (*model.Session, error) {
 	user, err := s.userService.FindByEmail(request.Email)
 	if err != nil {

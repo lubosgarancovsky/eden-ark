@@ -8,7 +8,8 @@ import {
     ResetPasswordPage,
     IndexPage,
     ErrorPage,
-    NotFoundPage
+    NotFoundPage,
+    LogoutPage
 } from "./pages";
 import "./index.css";
 
@@ -17,7 +18,7 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
             <Routes>
                 <Route index path="/" element={<IndexPage />} />
-                <Route index path="/login" element={<LoginPage />} />
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/create-account" element={<CreateAccountPage />} />
                 <Route
                     path="/forgot-password"
@@ -25,6 +26,7 @@ createRoot(document.getElementById("root")!).render(
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/error" element={<ErrorPage />} />
+                <Route path="/logout" element={<LogoutPage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </BrowserRouter>

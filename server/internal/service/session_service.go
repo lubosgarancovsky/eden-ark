@@ -44,3 +44,7 @@ func (s *SessionService) Insert(userID uuid.UUID, ipAddr string, userAgent strin
 func (s *SessionService) Delete(sessionID uuid.UUID) error {
 	return s.r.Delete(sessionID)
 }
+
+func (s *SessionService) DeleteByToken(sessionToken string) error {
+	return s.r.DeleteByToken(sessionToken)
+}

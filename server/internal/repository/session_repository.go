@@ -43,3 +43,14 @@ func (r *SessionRepository) Delete(sessionID uuid.UUID) error {
 	}
 	return nil
 }
+
+func (r *SessionRepository) DeleteByToken(sessionToken string) error {
+	result := r.db.Where("session_token = ?", sessionToken).Delete(&model.Session{})
+	if result.Error != nil {
+		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return api_err.Wrap(api_err.ErrNotFound, result.Error)
+	}
+	return nil
+}
