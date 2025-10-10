@@ -1,5 +1,6 @@
 .idea
 vscode
 node_modules
-
-.env*
+docs
+certs
+.env.dev
