@@ -3,4 +3,4 @@ vscode
 node_modules
 docs
 certs
-.env.dev
+.env*
