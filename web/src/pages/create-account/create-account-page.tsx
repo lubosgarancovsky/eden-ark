@@ -31,7 +31,11 @@ const CreateAccountPage: FC = () => {
 
     return (
         <Layout>
-            <Card title="Create account" description="Create new Eden account">
+            <Card
+                title="Create account"
+                description="Create new Eden account"
+                backLink={{ label: "Back to login", href: "/login" }}
+            >
                 <form
                     className="flex flex-col gap-8 min-w-72"
                     onSubmit={onSubmit}
@@ -100,16 +104,9 @@ const CreateAccountPage: FC = () => {
                         <p className="text-red-500 text-sm">{error.message}</p>
                     )}
 
-                    <div className="flex items-center justify-between gap-8">
-                        <a href="/login" className="-ml-4">
-                            <Button type="button" variant="secondary">
-                                Back to login
-                            </Button>
-                        </a>
-                        <Button variant="primary" disabled={mismatch}>
-                            Create account
-                        </Button>
-                    </div>
+                    <Button variant="primary" disabled={mismatch}>
+                        Create an account
+                    </Button>
                 </form>
             </Card>
         </Layout>

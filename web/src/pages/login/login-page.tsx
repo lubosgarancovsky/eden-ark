@@ -2,6 +2,7 @@ import { FC } from "react";
 import { Button, Input, Layout } from "../../components";
 import { useLogin } from "../../hooks";
 import Card from "../../components/core/card/card.tsx";
+import { ArrowRight } from "lucide-react";
 
 const LoginPage: FC = () => {
     const { error, returnTo } = useLogin();
@@ -19,9 +20,9 @@ const LoginPage: FC = () => {
                         <input type="hidden" name="returnTo" value={returnTo} />
                         <div className="flex flex-col gap-1.5">
                             <Input
-                                label="E-mail"
-                                name="email"
-                                type="email"
+                                label="E-mail or username"
+                                name="username"
+                                type="username"
                                 required
                             />
                         </div>
@@ -42,17 +43,17 @@ const LoginPage: FC = () => {
                         <p className="text-red-500 text-sm">{error}</p>
                     )}
 
-                    <div className="flex items-center justify-between gap-8">
-                        <a href="/create-account" className="-ml-4">
-                            <Button type="button" variant="secondary">
-                                Create account
-                            </Button>
-                        </a>
-
-                        <Button variant="primary">Log in</Button>
-                    </div>
+                    <Button variant="primary">
+                        Log in <ArrowRight size={16} />
+                    </Button>
                 </form>
             </Card>
+            <div className="text-sm">
+                Don't have an account yet?{" "}
+                <a href="/create-account" className="link">
+                    Sign up
+                </a>
+            </div>
         </Layout>
     );
 };

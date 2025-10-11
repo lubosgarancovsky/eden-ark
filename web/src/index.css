@@ -1,25 +1,45 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([class~=dark], [class~=dark] *));
+
 @theme {
-    --color-muted-foreground: oklch(0.70 0 0)
+    --color-primary: oklch(0 0 0);
+    --color-border: oklch(0.8141 0 0);
+    --color-accent: oklch(0.4858 0.2389 268.46);
+    --color-foreground: oklch(0.2264 0 0);
+    --color-muted-foreground: oklch(0.5795 0 0);
+    --color-background: oklch(0.931 0 0);
+    --color-card: oklch(0.9551 0 0);
+}
+
+@layer base {
+    :root[class~="dark"] {
+        --color-primary: oklch(0.497 0.253 267.888);
+        --color-border: oklch(0.38 0 0);
+        --color-accent: oklch(0.562 0.225 271.061);
+        --color-foreground: oklch(0.931 0 0);
+        --color-muted-foreground: oklch(0.7 0 0);
+        --color-background: oklch(0.18 0 0);
+        --color-card: oklch(0.18 0 0);
+    }
 }
 
 html {
-    @apply text-neutral-100 bg-neutral-950
+    @apply text-foreground
 }
 
 body {
-    @apply bg-zinc-900
+    @apply bg-background
 }
 
 h1 {
-    @apply text-3xl
+    @apply text-2xl
 }
 
 .link {
-    @apply font-medium text-blue-500 text-sm hover:underline;
+    @apply text-accent text-sm hover:underline;
 }
 
 label {
-    @apply font-medium text-sm
+    @apply text-sm
 }

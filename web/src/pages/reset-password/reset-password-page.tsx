@@ -19,7 +19,11 @@ const ResetPasswordPage: FC = () => {
 
     return (
         <Layout>
-            <Card title="Reset password" description="Create new password">
+            <Card
+                title="Reset password"
+                description="Create new password"
+                backLink={{ label: "Back to login", href: "/login" }}
+            >
                 {state === "success" && (
                     <div className="flex flex-col gap-8">
                         <ErrorBanner title="Success" variant="success">
@@ -56,7 +60,9 @@ const ResetPasswordPage: FC = () => {
                                     type="password"
                                     value={password2}
                                     accent={accent}
-                                    onChange={handlePasswordChange("repeat-password")}
+                                    onChange={handlePasswordChange(
+                                        "repeat-password"
+                                    )}
                                     required
                                 />
                             </div>
@@ -81,24 +87,16 @@ const ResetPasswordPage: FC = () => {
                             </p>
                         )}
 
-                        <div className="flex items-center justify-between gap-8">
-                            <a href="/login" className="-ml-4">
-                                <Button type="button" variant="secondary">
-                                    Back to login
-                                </Button>
-                            </a>
-
-                            <Button
-                                variant="primary"
-                                disabled={
-                                    state === "pending" ||
-                                    mismatch ||
-                                    percentage === 0
-                                }
-                            >
-                                Change password
-                            </Button>
-                        </div>
+                        <Button
+                            variant="primary"
+                            disabled={
+                                state === "pending" ||
+                                mismatch ||
+                                percentage === 0
+                            }
+                        >
+                            Change the password
+                        </Button>
                     </form>
                 )}
             </Card>

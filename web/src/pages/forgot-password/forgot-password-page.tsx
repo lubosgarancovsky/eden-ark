@@ -2,6 +2,7 @@ import { FC } from "react";
 import { Button, Input, Layout } from "../../components";
 import Card from "../../components/core/card/card.tsx";
 import { useResetPassword } from "../../hooks";
+import { Mail } from "lucide-react";
 
 const ForgotPasswordPage: FC = () => {
     const { error, state, email, onSubmit, resend } = useResetPassword();
@@ -11,6 +12,7 @@ const ForgotPasswordPage: FC = () => {
             <Card
                 title="Reset password"
                 description="Enter your e-mail to reset password"
+                backLink={{ label: "Back to login", href: "/login" }}
             >
                 {state === "success" && (
                     <div className="flex flex-col gap-4">
@@ -45,31 +47,21 @@ const ForgotPasswordPage: FC = () => {
                                 id="email"
                                 name="email"
                                 type="email"
+                                error={error?.message}
                                 required
                             />
                         </div>
 
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                             A verification link will be sent to your e-mail
                         </p>
 
-                        {error && (
-                            <p className="text-red-500 text-sm">
-                                {error?.message}
-                            </p>
-                        )}
-
-                        <div className="flex items-center justify-between gap-8">
-                            <a href="/login" className="-ml-4">
-                                <Button type="button" variant="secondary">
-                                    Back to login
-                                </Button>
-                            </a>
-
+                        <div className="flex flex-col gap-2">
                             <Button
                                 variant="primary"
                                 disabled={state === "pending"}
                             >
+                                <Mail size={16} />
                                 Send verification e-mail
                             </Button>
                         </div>

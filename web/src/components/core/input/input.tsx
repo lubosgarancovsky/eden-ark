@@ -15,10 +15,17 @@ type Props = DetailedHTMLProps<
 > & {
     label?: string;
     accent?: "success" | "error";
-    error?: string;
+    error?: string | boolean;
 };
 
-const Input: FC<Props> = ({ label, className, type, accent, error, ...props }) => {
+const Input: FC<Props> = ({
+    label,
+    className,
+    type,
+    accent,
+    error,
+    ...props
+}) => {
     const id = useId();
     const [masked, setMasked] = useState(type === "password");
 
@@ -38,10 +45,12 @@ const Input: FC<Props> = ({ label, className, type, accent, error, ...props }) =
                 <input
                     id={id}
                     className={cn(
-                        "w-full border border-zinc-600 p-2 rounded-lg outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-200",
+                        "w-full border border-border dark:bg-white/5 px-2 py-1.5 rounded outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 text-sm",
                         {
-                            "border-green-500 focus-visible:ring-green-500 text-green-500 bg-green-500/20": accent === 'success',
-                            "border-red-500 focus-visible:ring-red-500 text-red-500": error || accent === 'error',
+                            "border-green-500 focus-visible:ring-green-500 text-green-500 !bg-green-500/20":
+                                accent === "success",
+                            "border-red-500 focus-visible:ring-red-500 text-red-500":
+                                error || accent === "error"
                         },
                         className
                     )}
@@ -50,13 +59,15 @@ const Input: FC<Props> = ({ label, className, type, accent, error, ...props }) =
                 />
                 {type === "password" && (
                     <button
-                        className="p-1.5 absolute top-1/2 right-2 -translate-y-1/2 hover:bg-zinc-700/50 rounded cursor-pointer"
+                        className="p-1 absolute top-1/2 right-1 -translate-y-1/2 hover:bg-muted-foreground/20 rounded-full cursor-pointer"
                         onClick={onEyeClick}
                     >
-                        {masked ? <Eye size={16}/> : <EyeOff size={16}/>}
+                        {masked ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                 )}
-                {error && <span className="text-red-500 text-sm">{error}</span>}
+                {error && typeof error === "string" && (
+                    <span className="text-red-500 text-sm">{error}</span>
+                )}
             </div>
         </div>
     );
