@@ -12,6 +12,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
+	"github.com/lubosgarancovsky/eden-ark/pkg/utils"
 	"github.com/lubosgarancovsky/go-kit/api_err"
 )
 
@@ -30,19 +31,16 @@ func NewOAuth2Handler(oauthService *service.OAuthService) *OAuth2Handler {
 func (h *OAuth2Handler) Authorize(c *gin.Context) {
 	var authorizeQuery model.AuthorizeQuery
 	if err := c.ShouldBindQuery(&authorizeQuery); err != nil {
-		//c.Error(err)
 		redirectToError(c, api_err.Wrap(api_err.ErrBadRequest, err))
 		return
 	}
 
 	if err := verifyAuthorizeQuery(&authorizeQuery); err != nil {
-		//c.Error(err)
 		redirectToError(c, err)
 		return
 	}
 
 	if _, err := h.oauthService.ValidateClientAtAuthorize(&authorizeQuery); err != nil {
-		//c.Error(err)
 		redirectToError(c, err)
 		return
 	}
@@ -55,14 +53,12 @@ func (h *OAuth2Handler) Authorize(c *gin.Context) {
 			return
 		}
 
-		//c.Error(err)
 		redirectToError(c, err)
 		return
 	}
 
 	session, authCode, err := h.oauthService.SaveAuthCode(cookie, &authorizeQuery)
 	if err != nil {
-		//c.Error(err)
 		redirectToError(c, err)
 		return
 	}
@@ -137,7 +133,7 @@ func (h *OAuth2Handler) Logout(c *gin.Context) {
 func (h *OAuth2Handler) Login(c *gin.Context) {
 	var input model.LoginRequest
 	if err := c.ShouldBind(&input); err != nil {
-		c.Error(err)
+		redirectWithError(c, "Invalid login request")
 		return
 	}
 
@@ -146,7 +142,7 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 	if returnToParam != "" {
 		decodedUri, err := base64.StdEncoding.DecodeString(returnToParam)
 		if err != nil {
-			c.Error(err)
+			redirectWithError(c, "Invalid login request")
 			return
 		}
 		returnTo = string(decodedUri)
@@ -158,7 +154,7 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 
 	returnToUri, err := url.ParseRequestURI(returnTo)
 	if err != nil {
-		c.Error(err)
+		redirectWithError(c, "Invalid login request")
 		return
 	}
 
@@ -167,7 +163,7 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 
 	session, err := h.oauthService.SaveSession(&input, c.Request.RemoteAddr, c.Request.UserAgent(), nonce)
 	if err != nil {
-		c.Error(err)
+		redirectWithError(c, "Entered credentials are invalid")
 		return
 	}
 
@@ -175,7 +171,6 @@ func (h *OAuth2Handler) Login(c *gin.Context) {
 	maxAge := int(time.Until(session.ExpiresAt).Seconds())
 	c.SetCookie(h.sessionCookieName, session.SessionToken, maxAge, "/", "", false, true)
 	c.Redirect(302, returnTo)
-	return
 }
 
 func (h *OAuth2Handler) Profile(c *gin.Context) {
@@ -195,6 +190,11 @@ func (h *OAuth2Handler) Profile(c *gin.Context) {
 }
 
 func (h *OAuth2Handler) handleAuthCodeGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {
+	if !utils.Includes(client.RedirectUris, tokenQuery.RedirectURI) {
+		c.Error(api_err.ErrBadRequest.WithMessage("invalid redirect uri"))
+		return
+	}
+
 	code, err := h.oauthService.ValidateAuthorizationCode(client, &tokenQuery)
 	if err != nil {
 		c.Error(err)
@@ -225,13 +225,12 @@ func (h *OAuth2Handler) handleRefreshGrantType(c *gin.Context, client *model.Cli
 		return
 	}
 
-	var input model.RefreshTokenRequest
-	if err := c.ShouldBind(&input); err != nil {
+	if tokenQuery.RefreshToken == "" {
 		c.Error(api_err.ErrBadRequest.WithMessage("refresh token is missing"))
 		return
 	}
 
-	sessionID, err := h.oauthService.ValidateRefreshToken(input.RefreshToken)
+	sessionID, err := h.oauthService.ValidateRefreshToken(tokenQuery.RefreshToken)
 	if err != nil {
 		c.Error(api_err.Wrap(api_err.ErrUnauthorized, err))
 		return
@@ -282,4 +281,12 @@ func verifyAuthorizeQuery(query *model.AuthorizeQuery) error {
 
 func redirectToError(c *gin.Context, err error) {
 	c.Redirect(302, fmt.Sprintf("/error?error=%s", err.Error()))
+}
+
+func redirectWithError(c *gin.Context, msg string) {
+	baseURI := "/login"
+	params := url.Values{}
+	params.Add("error", msg)
+	redirectURI := baseURI + "?" + params.Encode()
+	c.Redirect(302, redirectURI)
 }

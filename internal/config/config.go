@@ -14,7 +14,7 @@ type Config struct {
 	PublicKeyPath    string `field:"PUBLIC_KEY_PATH"`
 	Issuer           string `field:"ISSUER"`
 	AccessExp        int    `field:"ACCESS_EXP"`
-	RefreshExp       int    `field:"REFRESH_EXPS"`
+	RefreshExp       int    `field:"REFRESH_EXP"`
 	SessionExp       int    `field:"SESSION_EXP"`
 	SMTPHost         string `field:"SMTP_HOST"`
 	SMTPPort         int    `field:"SMTP_PORT"`

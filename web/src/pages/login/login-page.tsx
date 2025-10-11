@@ -2,22 +2,9 @@ import { FC } from "react";
 import { Button, Input, Layout } from "../../components";
 import { useLogin } from "../../hooks";
 import Card from "../../components/core/card/card.tsx";
-import { Check } from "lucide-react";
 
 const LoginPage: FC = () => {
-    const { state, error, returnTo } = useLogin();
-
-    if (state === "success") {
-        return (
-            <Layout>
-                <Card title="Success" description="You are now signed in">
-                    <div className="border border-green-500 bg-green-500/10 rounded-full mx-auto w-32 h-32 text-green-500 flex items-center justify-center">
-                        <Check size={64} />
-                    </div>
-                </Card>
-            </Layout>
-        );
-    }
+    const { error, returnTo } = useLogin();
 
     return (
         <Layout>
@@ -52,7 +39,7 @@ const LoginPage: FC = () => {
                     </div>
 
                     {error && (
-                        <p className="text-red-500 text-sm">{error?.message}</p>
+                        <p className="text-red-500 text-sm">{error}</p>
                     )}
 
                     <div className="flex items-center justify-between gap-8">

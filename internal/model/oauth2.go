@@ -26,15 +26,12 @@ type TokenQuery struct {
 	RedirectURI  string `form:"redirect_uri"`
 	Scope        string `form:"scope"`
 	CodeVerifier string `form:"code_verifier"`
-}
-
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `form:"refresh_token"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
 	ReturnTo string `json:"returnTo"`
 }
 

@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
-	"github.com/lubosgarancovsky/eden-ark/pkg/errors"
 	"github.com/lubosgarancovsky/eden-ark/pkg/utils"
 	"github.com/lubosgarancovsky/go-kit/api_err"
 	"github.com/lubosgarancovsky/go-kit/kit"
@@ -60,11 +59,6 @@ func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Cl
 	client, err := s.clientService.FindByID(clientID)
 	if err != nil {
 		return nil, err
-	}
-
-	// Redirect URI check
-	if !utils.Includes(client.RedirectUris, query.RedirectURI) {
-		return client, api_err.ErrBadRequest.WithMessage("invalid redirect uri")
 	}
 
 	// Grant type check
@@ -222,15 +216,15 @@ func (s *OAuthService) ValidateRefreshToken(refreshToken string) (uuid.UUID, err
 		return uuid.Nil, err
 	}
 
-	claims := &jwt.MapClaims{}
+	claims := jwt.MapClaims{}
 
-	token, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
-		// Ensure the token is signed with RSA
+	token, err := jwt.ParseWithClaims(refreshToken, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return publicKey, nil
 	})
+
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to parse token: %w", err)
 	}
@@ -239,19 +233,19 @@ func (s *OAuthService) ValidateRefreshToken(refreshToken string) (uuid.UUID, err
 		return uuid.Nil, fmt.Errorf("refresh token is malformed or expired")
 	}
 
-	sid, ok := token.Claims.(jwt.MapClaims)["sid"]
+	sidValue, ok := claims["sid"]
 	if !ok {
-		return uuid.Nil, fmt.Errorf("refresh token is malformed or expired")
+		return uuid.Nil, fmt.Errorf("refresh token missing sid")
 	}
 
-	sidString, ok := sid.(string)
+	sidStr, ok := sidValue.(string)
 	if !ok {
-		return uuid.Nil, fmt.Errorf("refresh token is malformed or expired")
+		return uuid.Nil, fmt.Errorf("sid is not a string")
 	}
 
-	sidUUID, err := uuid.Parse(sidString)
+	sidUUID, err := uuid.Parse(sidStr)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("refresh token is malformed or expired")
+		return uuid.Nil, fmt.Errorf("sid is not a valid UUID")
 	}
 
 	return sidUUID, nil
@@ -274,7 +268,7 @@ func (s *OAuthService) GenerateTokens(client *model.Client, user *model.User, se
 
 	accessTokenClaims := s.AccessTokenClaims(client, user, session, query)
 	accessToken, err := s.SignToken(accessTokenClaims, privateKey)
-	refreshToken, err := s.SignToken(s.RefreshTokenClaims(client, user, session, query, accessToken), privateKey)
+	refreshToken, err := s.SignToken(s.RefreshTokenClaims(client, user, session, query, ""), privateKey)
 
 	return &model.JWTResponse{
 		IdToken:      &idToken,
@@ -370,13 +364,13 @@ func (s *OAuthService) DeleteSession(sessionToken string) error {
 }
 
 func (s *OAuthService) SaveSession(request *model.LoginRequest, ipAddr string, userAgent string, nonce string) (*model.Session, error) {
-	user, err := s.userService.FindByEmail(request.Email)
+	user, err := s.GetUser(request.Username)
 	if err != nil {
 		return nil, err
 	}
 
 	if match := s.userService.MatchPassword(request.Password, user.PasswordHash); !match {
-		return nil, errors.ErrInvalidCredentials
+		return nil, api_err.ErrUnauthorized.WithMessage("invalid credentials")
 	}
 
 	session, err := s.sessionService.Insert(user.ID, ipAddr, userAgent, nonce)
@@ -385,6 +379,14 @@ func (s *OAuthService) SaveSession(request *model.LoginRequest, ipAddr string, u
 	}
 
 	return session, nil
+}
+
+func (s *OAuthService) GetUser(username string) (*model.User, error) {
+	if strings.Contains(username, "@") {
+		return s.userService.FindByEmail(username)
+	}
+
+	return s.userService.FindByUsername(username)
 }
 
 func (s *OAuthService) HashCodeVerifier(codeVerifier string, method string) string {
