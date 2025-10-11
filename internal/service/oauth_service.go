@@ -289,6 +289,7 @@ func (s *OAuthService) IDTokenClaims(client *model.Client, user *model.User, ses
 		"nonce":       session.Nonce,
 		"given_name":  user.FirstName,
 		"family_name": user.LastName,
+		"username":    user.Username,
 		"email":       user.Email,
 		"role":        user.Role,
 		"amr":         "pwd",
