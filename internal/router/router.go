@@ -54,7 +54,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	oauth2Handler := handler.NewOAuth2Handler(oauth2Service)
 
 	v1 := r.Group("/v1/ark")
-	protected := v1.Group("/", middleware.AuthMiddleware())
+	protected := v1.Group("", middleware.AuthMiddleware())
 	admin := protected.Group("/admin", middleware.RoleMiddleware([]string{"admin"}))
 
 	// OAuth2 endpoints
@@ -70,25 +70,25 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	// API endpoints
 	adminClient := admin.Group("/clients")
 	{
-		adminClient.GET("/", clientHandler.FindAll)
+		adminClient.GET("", clientHandler.FindAll)
 		adminClient.GET("/:clientId", clientHandler.FindByID)
-		adminClient.POST("/", clientHandler.Create)
+		adminClient.POST("", clientHandler.Create)
 		adminClient.PUT("/:clientId", clientHandler.Update)
 		adminClient.DELETE("/:clientId", clientHandler.Delete)
 	}
 
 	adminClientSecret := adminClient.Group("/clients/:clientId/secrets")
 	{
-		adminClientSecret.GET("/", clientSecretHandler.FindAll)
-		adminClientSecret.POST("/", clientSecretHandler.Create)
+		adminClientSecret.GET("", clientSecretHandler.FindAll)
+		adminClientSecret.POST("", clientSecretHandler.Create)
 		adminClientSecret.DELETE("/:clientSecretId", clientSecretHandler.Delete)
 	}
 
 	adminUser := admin.Group("/users")
 	{
-		adminUser.GET("/", userHandler.FindAll)
+		adminUser.GET("", userHandler.FindAll)
 		adminUser.GET("/:userId", userHandler.FindByID)
-		adminUser.POST("/", userHandler.Create)
+		adminUser.POST("", userHandler.Create)
 		adminUser.PUT("/:userId", userHandler.Update)
 		adminUser.DELETE("/:userId", userHandler.Delete)
 		adminUser.DELETE("/:userId/generate-password", userHandler.GeneratePassword)
