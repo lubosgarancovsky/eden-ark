@@ -24,7 +24,7 @@ func (s *ClientService) FindAll(lq *list.ListingQuery) (*list.Page[model.Client]
 	return &list.Page[model.Client]{
 		Items:      items,
 		Page:       lq.Page,
-		PageSize:   lq.Offset,
+		PageSize:   lq.Limit,
 		TotalCount: totalCount,
 	}, nil
 }
