@@ -1,6 +1,8 @@
 package router
 
 import (
+	"path/filepath"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/handler"
@@ -48,6 +50,11 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(cfg, userRepo, recoveryTokenService, emailService)
 	userHandler := handler.NewUserHandler(parser, userService)
+
+	// User avatar
+	userAvatarRepo := repository.NewUserAvatarRepository(db)
+	userAvatarService := service.NewUserAvatarService(cfg, userService, userAvatarRepo)
+	userAvatarHandler := handler.NewUserAvatarHandler(userAvatarService)
 
 	// OAuth2
 	oauth2Service := service.NewOAuthService(cfg, clientService, clientSecretService, sessionService, userService, authCodeService)
@@ -101,6 +108,10 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		protectedUser.DELETE("/:userId", userHandler.Delete)
 		protectedUser.POST("/request-change-email", userHandler.RequestChangeEmail)
 		protectedUser.POST("/change-email", userHandler.ChangeEmail)
+
+		// Avatar
+		protectedUser.POST("/avatar", userAvatarHandler.UploadAvatar)
+		protectedUser.DELETE("/avatar", userAvatarHandler.RemoveAvatar)
 	}
 
 	publicUser := v1.Group("/users")
@@ -110,7 +121,11 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		publicUser.GET("/email-available", userHandler.IsUsernameAvailable)
 		publicUser.POST("/request-reset-password", userHandler.RequestResetPassword)
 		publicUser.POST("/reset-password", userHandler.ResetPassword)
+
 	}
+
+	// Static
+	v1.Static("/avatars", filepath.Join(cfg.UploadsFolder, "avatars"))
 
 	// Internal
 	{

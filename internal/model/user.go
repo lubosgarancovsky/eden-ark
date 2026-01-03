@@ -44,18 +44,25 @@ type UpdateUserRequest struct {
 }
 
 type User struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
-	FirstName    string    `json:"firstName"`
-	LastName     string    `json:"lastName"`
-	Username     string    `json:"username"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"-"`
-	Role         string    `json:"role"`
-	Color        string    `json:"color"`
-	IsActive     bool      `json:"isActive"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
-	DeletedAt    time.Time `json:"deletedAt"`
+	ID            uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	FirstName     string    `json:"firstName"`
+	LastName      string    `json:"lastName"`
+	Username      string    `json:"username"`
+	Email         string    `json:"email"`
+	PasswordHash  string    `json:"-"`
+	Role          string    `json:"role"`
+	Color         string    `json:"color"`
+	AvatarMime    *string   `json:"avatarMime"`
+	AvatarVersion *int      `json:"avatarVersion"`
+	IsActive      bool      `json:"isActive"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
+	DeletedAt     time.Time `json:"deletedAt"`
+}
+
+type UserAvatar struct {
+	MimeType string `json:"mimeType"`
+	Version  int    `json:"version"`
 }
 
 func (u *User) TableName() string {
