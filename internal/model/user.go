@@ -40,6 +40,7 @@ type UpdateUserRequest struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	IsAdmin   bool   `json:"isAdmin"`
+	Color     string `json:"color"`
 }
 
 type User struct {
@@ -50,6 +51,7 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"`
 	Role         string    `json:"role"`
+	Color        string    `json:"color"`
 	IsActive     bool      `json:"isActive"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`

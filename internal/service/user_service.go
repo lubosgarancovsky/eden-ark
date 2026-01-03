@@ -89,6 +89,7 @@ func (s *UserService) Update(userID uuid.UUID, userRequest *model.UpdateUserRequ
 		ID:        userID,
 		FirstName: userRequest.FirstName,
 		LastName:  userRequest.LastName,
+		Color:     userRequest.Color,
 		Role:      role,
 	}
 
@@ -129,8 +130,7 @@ func (s *UserService) RequestPasswordChange(email string) error {
 		ResetURL:         fmt.Sprintf("%s/reset-password", s.cfg.PublicURL),
 	}
 
-	templatePath := "templates/reset-password.html"
-	return s.emailService.SendTemplateEmail(email, "Eden - Password reset", templatePath, templateData)
+	return s.emailService.SendTemplateEmail(email, "Eden - Password reset", "reset-password.html", templateData)
 }
 
 func (s *UserService) ResetPassword(tokenString string, password string) error {
@@ -196,8 +196,7 @@ func (s *UserService) RequestEmailChange(userID uuid.UUID) error {
 		ExpiresInMinutes: int(time.Until(token.ExpiresAt).Minutes()) + 1,
 	}
 
-	templatePath := "templates/change-email.html"
-	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", templatePath, templateData)
+	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", "change-email.html", templateData)
 }
 
 func (s *UserService) GeneratePassword(userID uuid.UUID) error {
@@ -232,8 +231,7 @@ func (s *UserService) GeneratePassword(userID uuid.UUID) error {
 		Year:     time.Now().Year(),
 	}
 
-	templatePath := "templates/new-user-credentials.html"
-	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", templatePath, templateData)
+	return s.emailService.SendTemplateEmail(user.Email, "Eden - Change email", "new-user-credentials.html", templateData)
 }
 
 func (s *UserService) ChangeEmail(input *model.EmailChangeRequest) (*model.User, error) {

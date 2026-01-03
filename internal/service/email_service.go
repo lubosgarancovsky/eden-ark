@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/smtp"
+	"path/filepath"
 
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 )
@@ -17,8 +18,9 @@ func NewEmailService(cfg *config.Config) *EmailService {
 	return &EmailService{cfg: cfg}
 }
 
-func (s *EmailService) SendTemplateEmail(to, subject, templatePath string, data any) error {
-	tmpl, err := template.ParseFiles(templatePath)
+func (s *EmailService) SendTemplateEmail(to, subject, templateName string, data any) error {
+	path := filepath.Join(s.cfg.TemplatesFolder, templateName)
+	tmpl, err := template.ParseFiles(path)
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}

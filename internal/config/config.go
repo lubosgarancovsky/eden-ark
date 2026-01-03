@@ -20,6 +20,7 @@ type Config struct {
 	SMTPPort         int    `field:"SMTP_PORT"`
 	SMTPFrom         string `field:"SMTP_FROM"`
 	RecoveryTokenExp int    `field:"RECOVERY_TOKEN_EXP"`
+	TemplatesFolder  string `field:"TEMPLATES_FOLDER"`
 }
 
 func LoadConfig() *Config {
