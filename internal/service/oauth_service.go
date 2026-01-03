@@ -281,19 +281,22 @@ func (s *OAuthService) GenerateTokens(client *model.Client, user *model.User, se
 
 func (s *OAuthService) IDTokenClaims(client *model.Client, user *model.User, session *model.Session) jwt.MapClaims {
 	return jwt.MapClaims{
-		"iss":         s.cfg.Issuer,
-		"sub":         user.ID.String(),
-		"aud":         client.ID.String(),
-		"exp":         time.Now().Add(time.Duration(s.cfg.AccessExp) * time.Second).UnixMilli(),
-		"iat":         time.Now().UnixMilli(),
-		"nonce":       session.Nonce,
-		"given_name":  user.FirstName,
-		"family_name": user.LastName,
-		"username":    user.Username,
-		"email":       user.Email,
-		"role":        user.Role,
-		"amr":         "pwd",
-		"azp":         client.ID.String(),
+		"iss":           s.cfg.Issuer,
+		"sub":           user.ID.String(),
+		"aud":           client.ID.String(),
+		"exp":           time.Now().Add(time.Duration(s.cfg.AccessExp) * time.Second).UnixMilli(),
+		"iat":           time.Now().UnixMilli(),
+		"nonce":         session.Nonce,
+		"given_name":    user.FirstName,
+		"family_name":   user.LastName,
+		"username":      user.Username,
+		"email":         user.Email,
+		"avatarVersion": user.AvatarVersion,
+		"avatarMime":    user.AvatarMime,
+		"color":         user.Color,
+		"role":          user.Role,
+		"amr":           "pwd",
+		"azp":           client.ID.String(),
 	}
 }
 
