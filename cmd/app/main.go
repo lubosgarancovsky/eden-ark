@@ -4,9 +4,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lubosgarancovsky/eden-ark/docs"
@@ -16,8 +20,12 @@ import (
 )
 
 func main() {
+	fmt.Println("███████╗██████╗ ███████╗███╗   ██╗       █████╗ ██████╗ ██╗  ██╗\n██╔════╝██╔══██╗██╔════╝████╗  ██║      ██╔══██╗██╔══██╗██║ ██╔╝\n█████╗  ██║  ██║█████╗  ██╔██╗ ██║█████╗███████║██████╔╝█████╔╝ \n██╔══╝  ██║  ██║██╔══╝  ██║╚██╗██║╚════╝██╔══██║██╔══██╗██╔═██╗ \n███████╗██████╔╝███████╗██║ ╚████║      ██║  ██║██║  ██║██║  ██╗\n╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝      ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝\n                                                                ")
 	cfg := config.LoadConfig()
-	gormDB := db.ConnectDB(cfg.DBUrl)
+	gormDB, err := db.ConnectDB(cfg.DBUrl)
+	if err != nil {
+		log.Println("DB unavailable, starting without DB:", err)
+	}
 
 	r := gin.Default()
 
@@ -31,8 +39,22 @@ func main() {
 		c.File(filepath.Join(dist, "index.html"))
 	})
 
-	err := r.Run(fmt.Sprintf(":%d", cfg.Port))
-	if err != nil {
-		log.Fatal(err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		if err = r.Run(fmt.Sprintf(":%d", cfg.Port)); err != nil {
+			log.Println(err)
+			stop()
+		}
+	}()
+
+	<-ctx.Done() // wait for shutdown signal
+
+	log.Println("shutting down")
+
+	if gormDB != nil {
+		sqlDB, _ := gormDB.DB()
+		sqlDB.Close()
 	}
 }

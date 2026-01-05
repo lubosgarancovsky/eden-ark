@@ -19,7 +19,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	parser := rsql.New()
 
 	// Global middleware
-	r.Use(middleware.ErrorMiddleware())
+	r.Use(middleware.ErrorMiddleware(), middleware.AppStateValidationMiddleware(db))
 
 	// Email
 	emailService := service.NewEmailService(cfg)
