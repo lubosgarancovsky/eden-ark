@@ -1,3 +1,5 @@
 export * from './login'
 export * from './signup'
 export * from './core'
+export * from './forgot-password'
+export * from './reset-password'

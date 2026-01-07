@@ -147,7 +147,7 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 		c.Error(err)
 	}
 
-	c.JSON(204, "")
+	c.Status(204)
 }
 
 func (h *UserHandler) RequestChangeEmail(c *gin.Context) {

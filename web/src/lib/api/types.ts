@@ -6,10 +6,3 @@ export type ApiError = {
     timestamp: string;
 };
 
-export type SignUpRequest = {
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    password: string;
-};

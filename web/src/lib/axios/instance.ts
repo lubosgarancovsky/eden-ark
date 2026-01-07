@@ -1,3 +1,7 @@
 import axios from "axios";
 
-export const httpClient = axios.create();
+const baseURL = import.meta.env.DEV ? 'http://localhost:9091' : undefined;
+
+export const httpClient = axios.create(
+    { baseURL }
+);

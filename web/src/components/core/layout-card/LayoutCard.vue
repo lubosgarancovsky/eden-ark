@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import {defineProps} from 'vue';
-
 type Props = {
    title: string;
  }
@@ -12,7 +10,7 @@ type Props = {
   <div class="flex items-center justify-center flex-col gap-10 w-96">
     <div class="flex items-center justify-center flex-col gap-4">
       <img src="/logo_48x48.svg" alt="eden-logo"/>
-      <h3 class="font-normal">{{ props.title }}}</h3>
+      <h3 class="font-normal">{{ props.title }}</h3>
     </div>
     <slot/>
   </div>

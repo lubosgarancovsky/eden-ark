@@ -1,21 +1,15 @@
-import axios from "axios";
-import type {SignUpRequest} from "@/lib/api";
-
-export const createLoginSession = async (username: string, password: string, returnTo: string) => {
-    await axios.post(`/oauth2/login?returnTo=${returnTo}`, { username, password });
-}
+import { httpClient } from "@/lib/axios";
 
 export const isUsernameAvailable = async (username: string): Promise<boolean> => {
-    const result = await axios.get(`/v1/ark/users/username-available/${username}`);
+    const result = await httpClient.get(`/v1/ark/users/username-available/${username}`);
     return result.data.isAvailable;
 }
 
-export const isEmailAvailable = async (email: string): Promise<boolean> => {
-    const result = await axios.get(`/v1/ark/users/email-available/${email}`);
-    return result.data.isAvailable;
+export const requestPasswordReset = async (email: string) => {
+    await httpClient.post(`/v1/ark/users/request-reset-password`, {email})
 }
 
-export const signup = async (data: SignUpRequest) => {
-    const result = await axios.post(`/v1/ark/users`, data);
-    return result.data;
+export const changePassword = async (password: string, token: string) => {
+    await httpClient.post(`/v1/ark/users/reset-password`, {password, token})
 }
+
