@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,13 +34,15 @@ func (s *AuthCodeService) CreateAuthCode(session *model.Session, input *model.Au
 		return nil, api_err.Wrap(api_err.ErrInvalidUUID, err)
 	}
 
+	scopes := strings.Split(input.Scope, " ")
+
 	code := &model.AuthorizationCode{
 		Code:                codeHash,
 		UserID:              session.UserID,
 		ClientID:            clientID,
 		SessionID:           session.ID,
 		RedirectURI:         input.RedirectURI,
-		Scope:               input.Scope,
+		Scopes:              scopes,
 		CodeChallenge:       input.CodeChallenge,
 		CodeChallengeMethod: input.CodeChallengeMethod,
 		ExpiresAt:           time.Now().Add(time.Minute * 2), // TODO: Load from config
