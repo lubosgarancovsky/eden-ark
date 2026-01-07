@@ -189,6 +189,21 @@ func (h *OAuth2Handler) Profile(c *gin.Context) {
 	c.JSON(200, user)
 }
 
+func (h *OAuth2Handler) Register(c *gin.Context) {
+	var input model.RegisterRequest
+	if err := c.ShouldBind(&input); err != nil {
+		customRedirectWithError(c, "Invalid sign up request", "/signup")
+		return
+	}
+
+	if _, err := h.oauthService.SaveUser(&input); err != nil {
+		customRedirectWithError(c, err.Error(), "/signup")
+		return
+	}
+
+	c.Redirect(302, "/login")
+}
+
 func (h *OAuth2Handler) handleAuthCodeGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {
 	if !utils.Includes(client.RedirectUris, tokenQuery.RedirectURI) {
 		c.Error(api_err.ErrBadRequest.WithMessage("invalid redirect uri"))
@@ -285,6 +300,14 @@ func redirectToError(c *gin.Context, err error) {
 
 func redirectWithError(c *gin.Context, msg string) {
 	baseURI := "/login"
+	params := url.Values{}
+	params.Add("error", msg)
+	redirectURI := baseURI + "?" + params.Encode()
+	c.Redirect(302, redirectURI)
+}
+
+func customRedirectWithError(c *gin.Context, msg, path string) {
+	baseURI := path
 	params := url.Values{}
 	params.Add("error", msg)
 	redirectURI := baseURI + "?" + params.Encode()

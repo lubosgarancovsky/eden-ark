@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lubosgarancovsky/eden-ark/internal/listing"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
@@ -179,12 +181,21 @@ func (h *UserHandler) ChangeEmail(c *gin.Context) {
 }
 
 func (h *UserHandler) IsUsernameAvailable(c *gin.Context) {
-	var input model.IsAvailableRequest
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
-		return
+	username, ok := c.Params.Get("username")
+	if !ok {
+		c.Error(api_err.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "username")))
 	}
 
-	response := h.s.IsEmailAvailable(input)
+	response := h.s.IsUsernameAvailable(username)
+	c.JSON(200, response)
+}
+
+func (h *UserHandler) IsEmailAvailable(c *gin.Context) {
+	email, ok := c.Params.Get("email")
+	if !ok {
+		c.Error(api_err.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "email")))
+	}
+
+	response := h.s.IsEmailAvailable(email)
 	c.JSON(200, response)
 }

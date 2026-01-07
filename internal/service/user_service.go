@@ -161,15 +161,15 @@ func (s *UserService) ResetPassword(tokenString string, password string) error {
 	return nil
 }
 
-func (s *UserService) IsUsernameAvailable(input model.IsAvailableRequest) *model.IsAvailableResponse {
-	_, err := s.r.FindByUsername(input.Value)
+func (s *UserService) IsUsernameAvailable(username string) *model.IsAvailableResponse {
+	_, err := s.r.FindByUsername(username)
 	return &model.IsAvailableResponse{
 		IsAvailable: err != nil,
 	}
 }
 
-func (s *UserService) IsEmailAvailable(input model.IsAvailableRequest) *model.IsAvailableResponse {
-	_, err := s.r.FindByEmail(input.Value)
+func (s *UserService) IsEmailAvailable(email string) *model.IsAvailableResponse {
+	_, err := s.r.FindByEmail(email)
 	return &model.IsAvailableResponse{
 		IsAvailable: err != nil,
 	}

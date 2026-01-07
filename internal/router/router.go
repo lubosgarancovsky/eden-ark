@@ -72,6 +72,7 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		oauth2.POST("/login", oauth2Handler.Login)
 		oauth2.GET("/logout", oauth2Handler.Logout)
 		oauth2.GET("/profile", middleware.AuthMiddleware(), oauth2Handler.Profile)
+		oauth2.POST("/register", oauth2Handler.Register)
 	}
 
 	// API endpoints
@@ -117,8 +118,8 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	publicUser := v1.Group("/users")
 	{
 
-		publicUser.GET("/username-available", userHandler.IsUsernameAvailable)
-		publicUser.GET("/email-available", userHandler.IsUsernameAvailable)
+		publicUser.GET("/username-available/:username", userHandler.IsUsernameAvailable)
+		publicUser.GET("/email-available/:email", userHandler.IsUsernameAvailable)
 		publicUser.POST("/request-reset-password", userHandler.RequestResetPassword)
 		publicUser.POST("/reset-password", userHandler.ResetPassword)
 

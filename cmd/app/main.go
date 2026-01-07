@@ -35,6 +35,13 @@ func main() {
 	dist := filepath.Join("web", "dist")
 	r.Static("/assets", filepath.Join(dist, "assets"))
 	r.StaticFile("/favicon.ico", filepath.Join(dist, "favicon.ico"))
+	r.StaticFile("/logo_16x16.svg", filepath.Join(dist, "logo_16x16.svg"))
+	r.StaticFile("/logo_32x32.svg", filepath.Join(dist, "logo_32x32.svg"))
+	r.StaticFile("/logo_48x48.svg", filepath.Join(dist, "logo_48x48.svg"))
+	r.StaticFile("/logo_64x64.svg", filepath.Join(dist, "logo_64x64.svg"))
+	r.StaticFile("/logo_180x180.svg", filepath.Join(dist, "logo_180x180.svg"))
+	r.StaticFile("/logo_192x192.svg", filepath.Join(dist, "logo_192x192.svg"))
+	r.StaticFile("/logo_512x512.svg", filepath.Join(dist, "logo_512x512.svg"))
 	r.NoRoute(func(c *gin.Context) {
 		c.File(filepath.Join(dist, "index.html"))
 	})
@@ -49,7 +56,7 @@ func main() {
 		}
 	}()
 
-	<-ctx.Done() // wait for shutdown signal
+	<-ctx.Done() // wait for a shutdown signal
 
 	log.Println("shutting down")
 

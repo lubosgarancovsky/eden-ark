@@ -1,0 +1,1 @@
+export { default as LayoutCard } from './LayoutCard.vue'

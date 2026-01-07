@@ -393,6 +393,16 @@ func (s *OAuthService) GetUser(username string) (*model.User, error) {
 	return s.userService.FindByUsername(username)
 }
 
+func (s *OAuthService) SaveUser(input *model.RegisterRequest) (*model.User, error) {
+	return s.userService.Insert(&model.CreateUserRequest{
+		FirsName: input.FirstName,
+		LastName: input.LastName,
+		Username: input.Username,
+		Email:    input.Email,
+		Password: input.Password,
+	})
+}
+
 func (s *OAuthService) HashCodeVerifier(codeVerifier string, method string) string {
 	if codeVerifier == "" {
 		return ""

@@ -35,6 +35,14 @@ type LoginRequest struct {
 	ReturnTo string `json:"returnTo"`
 }
 
+type RegisterRequest struct {
+	FirstName string `form:"firstName" binding:"required"`
+	LastName  string `form:"lastName" binding:"required"`
+	Email     string `form:"email" binding:"required"`
+	Username  string `form:"username" binding:"required"`
+	Password  string `form:"password" binding:"required"`
+}
+
 type JWTResponse struct {
 	AccessToken  string  `json:"access_token"`
 	RefreshToken string  `json:"refresh_token"`
