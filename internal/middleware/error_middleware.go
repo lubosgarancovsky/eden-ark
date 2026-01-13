@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 				correlationID = uuid.Nil
 			}
 
-			var apiErr *api_err.ApiError
+			var apiErr *go_kit.ApiError
 			if errors.As(lastErr, &apiErr) {
 				apiErr.Log()
 				c.JSON(apiErr.HTTPStatus, apiErr.ToJSON(serviceID, correlationID.String()))
@@ -31,13 +31,13 @@ func ErrorMiddleware() gin.HandlerFunc {
 			}
 
 			if errors.Is(lastErr, gorm.ErrRecordNotFound) {
-				apiErr := api_err.ErrNotFound
+				apiErr := go_kit.ErrNotFound
 				apiErr.Log()
 				c.JSON(apiErr.HTTPStatus, apiErr.ToJSON(serviceID, correlationID.String()))
 				return
 			}
 
-			unknownError := api_err.Unknown(lastErr)
+			unknownError := go_kit.Unknown(lastErr)
 			unknownError.Log()
 			c.JSON(http.StatusInternalServerError, unknownError.ToJSON(serviceID, correlationID.String()))
 		}

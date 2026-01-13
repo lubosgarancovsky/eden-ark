@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 
-	"github.com/lubosgarancovsky/go-kit/cfg"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type Config struct {
@@ -26,7 +26,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	var appConfig Config
-	if err := cfg.LoadEnv(&appConfig); err != nil {
+	if err := go_kit.LoadEnv(&appConfig); err != nil {
 		log.Fatal("Failed to load config from .env file", err)
 	}
 

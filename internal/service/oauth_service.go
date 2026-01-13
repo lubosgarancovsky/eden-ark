@@ -13,8 +13,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/pkg/utils"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/kit"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type OAuthService struct {
@@ -47,12 +46,12 @@ func NewOAuthService(
 // ValidateClientAtToken Validate client bound parameters for all token requests
 func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Client, error) {
 	if query.ClientID == "" {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	clientID, err := uuid.Parse(query.ClientID)
 	if err != nil {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	// Client exists check
@@ -63,7 +62,7 @@ func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Cl
 
 	// Grant type check
 	if !utils.Includes(client.GrantTypes, query.GrantType) {
-		return client, api_err.ErrBadRequest.WithMessage("invalid grant type")
+		return client, go_kit.ErrBadRequest.WithMessage("invalid grant type")
 	}
 
 	// Client secret check for confidential clients
@@ -77,35 +76,35 @@ func (s *OAuthService) ValidateClientAtToken(query *model.TokenQuery) (*model.Cl
 // ValidateClientAtAuthorize Validate client-bound parameters for all authorized requests
 func (s *OAuthService) ValidateClientAtAuthorize(query *model.AuthorizeQuery) (*model.Client, error) {
 	if query.ClientID == "" {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	clientID, err := uuid.Parse(query.ClientID)
 	if err != nil {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	// Client exists check
 	client, err := s.clientService.FindByID(clientID)
 	if err != nil {
-		return nil, api_err.Wrap(api_err.ErrBadRequest.WithMessage(fmt.Sprintf("client with id %s does not exist", clientID.String())), err)
+		return nil, go_kit.Wrap(go_kit.ErrBadRequest.WithMessage(fmt.Sprintf("client with id %s does not exist", clientID.String())), err)
 	}
 
 	// Redirect URI check
 	if !utils.Includes(client.RedirectUris, query.RedirectURI) {
-		return client, api_err.ErrBadRequest.WithMessage("invalid redirect uri")
+		return client, go_kit.ErrBadRequest.WithMessage("invalid redirect uri")
 	}
 
 	// PKCE Check
 	if !client.IsConfidential {
 		if query.CodeChallenge == "" {
-			return client, api_err.ErrBadRequest.WithMessage("code_challenge is required")
+			return client, go_kit.ErrBadRequest.WithMessage("code_challenge is required")
 		}
 		if query.CodeChallengeMethod == "" {
-			return client, api_err.ErrBadRequest.WithMessage("code_challenge_method is required")
+			return client, go_kit.ErrBadRequest.WithMessage("code_challenge_method is required")
 		}
 		if query.CodeChallengeMethod == "S256" {
-			return client, api_err.ErrBadRequest.WithMessage("code_challenge_method is not supported")
+			return client, go_kit.ErrBadRequest.WithMessage("code_challenge_method is not supported")
 		}
 	}
 
@@ -121,7 +120,7 @@ func (s *OAuthService) ValidateUserSession(sessionID uuid.UUID) (*model.User, *m
 
 	// TODO: Should log out user if session is expired
 	if session.ExpiresAt.Before(time.Now()) {
-		return nil, nil, api_err.ErrUnauthorized.WithMessage("session has expired")
+		return nil, nil, go_kit.ErrUnauthorized.WithMessage("session has expired")
 	}
 
 	user, err := s.userService.FindByID(session.UserID)
@@ -140,11 +139,11 @@ func (s *OAuthService) ValidateAuthorizationCode(client *model.Client, query *mo
 	}
 
 	if code.ClientID != client.ID {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid client id")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid client id")
 	}
 
 	if code.ExpiresAt.Before(time.Now()) {
-		return nil, api_err.ErrUnauthorized.WithMessage("code has expired")
+		return nil, go_kit.ErrUnauthorized.WithMessage("code has expired")
 	}
 
 	// PKCE check for non confidential clients
@@ -163,11 +162,11 @@ func (s *OAuthService) ValidatePKCE(client *model.Client, code *model.Authorizat
 
 	hash := s.HashCodeVerifier(tokenRequest.CodeVerifier, code.CodeChallengeMethod)
 	if hash == "" {
-		return api_err.ErrUnauthorized.WithMessage("invalid code verifier")
+		return go_kit.ErrUnauthorized.WithMessage("invalid code verifier")
 	}
 
 	if hash != code.CodeChallenge {
-		return api_err.ErrUnauthorized.WithMessage("invalid code verifier")
+		return go_kit.ErrUnauthorized.WithMessage("invalid code verifier")
 	}
 
 	return nil
@@ -189,17 +188,17 @@ func (s *OAuthService) ValidateBasicToken(client *model.Client, authHeader strin
 	}
 
 	if authHeader == "" {
-		return nil, api_err.ErrUnauthorized.WithMessage("missing authorization header")
+		return nil, go_kit.ErrUnauthorized.WithMessage("missing authorization header")
 	}
 
 	parts := strings.Split(authHeader, " ")
 	if parts[0] != "Basic" || len(parts) != 2 {
-		return nil, api_err.ErrUnauthorized.WithMessage("invalid authorization header")
+		return nil, go_kit.ErrUnauthorized.WithMessage("invalid authorization header")
 	}
 
 	secretString, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
-		return nil, api_err.ErrUnauthorized.WithMessage("invalid authorization header")
+		return nil, go_kit.ErrUnauthorized.WithMessage("invalid authorization header")
 	}
 
 	secret, err := s.ValidateClientSecret(client, string(secretString))
@@ -211,7 +210,7 @@ func (s *OAuthService) ValidateBasicToken(client *model.Client, authHeader strin
 }
 
 func (s *OAuthService) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
-	publicKey, err := kit.LoadPublicKey(s.cfg.PublicKeyPath)
+	publicKey, err := go_kit.LoadPublicKey(s.cfg.PublicKeyPath)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -252,7 +251,7 @@ func (s *OAuthService) ValidateRefreshToken(refreshToken string) (uuid.UUID, err
 }
 
 func (s *OAuthService) GenerateTokens(client *model.Client, user *model.User, session *model.Session, query *model.TokenQuery) (*model.JWTResponse, error) {
-	privateKey, err := kit.LoadPrivateKey(s.cfg.PrivateKeyPath)
+	privateKey, err := go_kit.LoadPrivateKey(s.cfg.PrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -374,7 +373,7 @@ func (s *OAuthService) SaveSession(request *model.LoginRequest, ipAddr string, u
 	}
 
 	if match := s.userService.MatchPassword(request.Password, user.PasswordHash); !match {
-		return nil, api_err.ErrUnauthorized.WithMessage("invalid credentials")
+		return nil, go_kit.ErrUnauthorized.WithMessage("invalid credentials")
 	}
 
 	session, err := s.sessionService.Insert(user.ID, ipAddr, userAgent, nonce)

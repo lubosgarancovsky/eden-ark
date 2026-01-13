@@ -2,16 +2,19 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lubosgarancovsky/eden-ark/internal/listing"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
-	"github.com/lubosgarancovsky/go-kit/rsql"
+	"github.com/lubosgarancovsky/go-kit"
 )
+
+type secretListingAttributes struct {
+	CreatedAt string `rsql:"filter,sort"`
+}
 
 type ClientSecretHandler struct {
 	s      *service.ClientSecretService
-	parser *rsql.Parser
+	parser *go_kit.Parser
 }
 
 type ClientSecretPage struct {
@@ -21,7 +24,7 @@ type ClientSecretPage struct {
 	TotalCount int64
 }
 
-func NewClientSecretHandler(parser *rsql.Parser, s *service.ClientSecretService) *ClientSecretHandler {
+func NewClientSecretHandler(parser *go_kit.Parser, s *service.ClientSecretService) *ClientSecretHandler {
 	return &ClientSecretHandler{s, parser}
 }
 
@@ -38,7 +41,7 @@ func NewClientSecretHandler(parser *rsql.Parser, s *service.ClientSecretService)
 // @Success      200  {array}   ClientSecretPage
 // @Router       /v1/arc/admin/clients/{clientId}/secrets [get]
 func (h *ClientSecretHandler) FindAll(c *gin.Context) {
-	lq, apiErr := helpers.CreateListingQuery(c, h.parser, listing.ClientSecretFilter, listing.ClientSecretFilter)
+	lq, apiErr := helpers.CreateListingQuery(c, h.parser, &secretListingAttributes{})
 	if apiErr != nil {
 		c.Error(apiErr)
 		return

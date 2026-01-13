@@ -6,8 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -20,7 +19,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (r *UserRepository) FindAll(lq *list.ListingQuery) ([]model.User, int64, error) {
+func (r *UserRepository) FindAll(lq *go_kit.ListingQuery) ([]model.User, int64, error) {
 	query := r.db.Model(&model.User{})
 	if lq.Filter != nil {
 		query = query.Where(lq.Filter.Query, lq.Filter.Args...)
@@ -70,7 +69,7 @@ func (r *UserRepository) Update(user *model.User) (*model.User, error) {
 		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return nil, api_err.ErrNotFound
+		return nil, go_kit.ErrNotFound
 	}
 	return user, nil
 }
@@ -81,10 +80,10 @@ func (r *UserRepository) MarkAsDeleted(id uuid.UUID) error {
 	})
 
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.ErrNotFound
+		return go_kit.ErrNotFound
 	}
 	return nil
 }
@@ -92,10 +91,10 @@ func (r *UserRepository) MarkAsDeleted(id uuid.UUID) error {
 func (r *UserRepository) Delete(id uuid.UUID) error {
 	result := r.db.Where("id = ?", id).Delete(&model.User{})
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.ErrNotFound
+		return go_kit.ErrNotFound
 	}
 	return nil
 }

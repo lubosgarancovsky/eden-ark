@@ -7,8 +7,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/kit"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type SessionService struct {
@@ -29,9 +28,9 @@ func (s *SessionService) FindByToken(token string) (*model.Session, error) {
 }
 
 func (s *SessionService) Insert(userID uuid.UUID, ipAddr string, userAgent string, nonce string) (*model.Session, error) {
-	token := kit.SHA256(32)
+	token := go_kit.SHA256(32)
 	if token == "" {
-		return nil, api_err.ErrInternalServer
+		return nil, go_kit.ErrInternalServer
 	}
 
 	session := &model.Session{

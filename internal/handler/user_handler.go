@@ -4,25 +4,34 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lubosgarancovsky/eden-ark/internal/listing"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/rsql"
+	"github.com/lubosgarancovsky/go-kit"
 )
+
+type userListingAttributes struct {
+	FirstName string `rsql:"filter,sort"`
+	LastName  string `rsql:"filter,sort"`
+	Email     string `rsql:"filter,sort"`
+	Username  string `rsql:"filter,sort"`
+	CreatedAt string `rsql:"filter,sort"`
+	IsActive  string `rsql:"filter,sort"`
+	Role      string `rsql:"filter,sort"`
+	DeletedAt string `rsql:"filter,sort"`
+}
 
 type UserHandler struct {
 	s      *service.UserService
-	parser *rsql.Parser
+	parser *go_kit.Parser
 }
 
-func NewUserHandler(parser *rsql.Parser, s *service.UserService) *UserHandler {
+func NewUserHandler(parser *go_kit.Parser, s *service.UserService) *UserHandler {
 	return &UserHandler{s: s, parser: parser}
 }
 
 func (h *UserHandler) FindAll(c *gin.Context) {
-	lq, err := helpers.CreateListingQuery(c, h.parser, listing.UserFilter, listing.UserSort)
+	lq, err := helpers.CreateListingQuery(c, h.parser, &userListingAttributes{})
 	if err != nil {
 		c.Error(err)
 		return
@@ -56,7 +65,7 @@ func (h *UserHandler) FindByID(c *gin.Context) {
 func (h *UserHandler) Create(c *gin.Context) {
 	var input model.CreateUserRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
+		c.Error(go_kit.Wrap(go_kit.ErrBadRequest, err))
 		return
 	}
 
@@ -72,7 +81,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 func (h *UserHandler) Update(c *gin.Context) {
 	var input model.UpdateUserRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
+		c.Error(go_kit.Wrap(go_kit.ErrBadRequest, err))
 		return
 	}
 
@@ -124,7 +133,7 @@ func (h *UserHandler) GeneratePassword(c *gin.Context) {
 func (h *UserHandler) RequestResetPassword(c *gin.Context) {
 	var input model.EmailRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
+		c.Error(go_kit.Wrap(go_kit.ErrBadRequest, err))
 		return
 	}
 
@@ -139,7 +148,7 @@ func (h *UserHandler) RequestResetPassword(c *gin.Context) {
 func (h *UserHandler) ResetPassword(c *gin.Context) {
 	var input model.PasswordRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
+		c.Error(go_kit.Wrap(go_kit.ErrBadRequest, err))
 		return
 	}
 
@@ -168,7 +177,7 @@ func (h *UserHandler) RequestChangeEmail(c *gin.Context) {
 func (h *UserHandler) ChangeEmail(c *gin.Context) {
 	var input model.EmailChangeRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.Error(api_err.Wrap(api_err.ErrBadRequest, err))
+		c.Error(go_kit.Wrap(go_kit.ErrBadRequest, err))
 	}
 
 	user, err := h.s.ChangeEmail(&input)
@@ -183,7 +192,7 @@ func (h *UserHandler) ChangeEmail(c *gin.Context) {
 func (h *UserHandler) IsUsernameAvailable(c *gin.Context) {
 	username, ok := c.Params.Get("username")
 	if !ok {
-		c.Error(api_err.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "username")))
+		c.Error(go_kit.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "username")))
 	}
 
 	response := h.s.IsUsernameAvailable(username)
@@ -193,7 +202,7 @@ func (h *UserHandler) IsUsernameAvailable(c *gin.Context) {
 func (h *UserHandler) IsEmailAvailable(c *gin.Context) {
 	email, ok := c.Params.Get("email")
 	if !ok {
-		c.Error(api_err.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "email")))
+		c.Error(go_kit.ErrParameterMissing.WithMessage(fmt.Sprintf("Path parameter %s is missing", "email")))
 	}
 
 	response := h.s.IsEmailAvailable(email)

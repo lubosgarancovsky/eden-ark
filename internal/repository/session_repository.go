@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
-	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -44,10 +44,10 @@ func (r *SessionRepository) Insert(session *model.Session) (*model.Session, erro
 func (r *SessionRepository) Delete(sessionID uuid.UUID) error {
 	result := r.db.Where("id = ?", sessionID).Delete(&model.Session{})
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.Wrap(api_err.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Session with id %s does not exist", sessionID))
+		return go_kit.Wrap(go_kit.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Session with id %s does not exist", sessionID))
 	}
 	return nil
 }
@@ -55,10 +55,10 @@ func (r *SessionRepository) Delete(sessionID uuid.UUID) error {
 func (r *SessionRepository) DeleteByToken(sessionToken string) error {
 	result := r.db.Where("session_token = ?", sessionToken).Delete(&model.Session{})
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.Wrap(api_err.ErrNotFound, result.Error)
+		return go_kit.Wrap(go_kit.ErrNotFound, result.Error)
 	}
 	return nil
 }
@@ -71,10 +71,10 @@ func (r *SessionRepository) UpdateNonce(sessionID uuid.UUID, nonce string) (*mod
 		Where("id = ?", sessionID).
 		Update("nonce", nonce)
 	if result.Error != nil {
-		return nil, api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return nil, go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return nil, api_err.Wrap(api_err.ErrNotFound, nil)
+		return nil, go_kit.Wrap(go_kit.ErrNotFound, nil)
 	}
 
 	return session, nil

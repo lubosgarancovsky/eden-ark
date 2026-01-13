@@ -9,14 +9,14 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/middleware"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
-	"github.com/lubosgarancovsky/go-kit/rsql"
+	"github.com/lubosgarancovsky/go-kit"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
 func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
-	parser := rsql.New()
+	parser := go_kit.NewRSQLParser()
 
 	// Global middleware
 	r.Use(middleware.ErrorMiddleware(), middleware.AppStateValidationMiddleware(db))

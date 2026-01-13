@@ -2,16 +2,15 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lubosgarancovsky/eden-ark/internal/listing"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
-	"github.com/lubosgarancovsky/go-kit/rsql"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type ClientHandler struct {
 	s      *service.ClientService
-	parser *rsql.Parser
+	parser *go_kit.Parser
 }
 
 type ClientPage struct {
@@ -21,7 +20,12 @@ type ClientPage struct {
 	TotalCount int64
 }
 
-func NewClientHandler(parser *rsql.Parser, s *service.ClientService) *ClientHandler {
+type clientListingAttributes struct {
+	Name      string `rsql:"filter,sort"`
+	CreatedAt string `rsql:"filter,sort"`
+}
+
+func NewClientHandler(parser *go_kit.Parser, s *service.ClientService) *ClientHandler {
 	return &ClientHandler{s, parser}
 }
 
@@ -37,7 +41,7 @@ func NewClientHandler(parser *rsql.Parser, s *service.ClientService) *ClientHand
 // @Success      200  {array}   ClientPage
 // @Router       /v1/ark/admin/clients [get]
 func (h *ClientHandler) FindAll(c *gin.Context) {
-	lq, apiErr := helpers.CreateListingQuery(c, h.parser, listing.ClientFilter, listing.ClientSort)
+	lq, apiErr := helpers.CreateListingQuery(c, h.parser, &clientListingAttributes{})
 	if apiErr != nil {
 		c.Error(apiErr)
 		return

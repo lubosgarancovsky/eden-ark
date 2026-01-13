@@ -13,7 +13,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/service"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
 	"github.com/lubosgarancovsky/eden-ark/pkg/utils"
-	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type OAuth2Handler struct {
@@ -31,7 +31,7 @@ func NewOAuth2Handler(oauthService *service.OAuthService) *OAuth2Handler {
 func (h *OAuth2Handler) Authorize(c *gin.Context) {
 	var authorizeQuery model.AuthorizeQuery
 	if err := c.ShouldBindQuery(&authorizeQuery); err != nil {
-		redirectToError(c, api_err.Wrap(api_err.ErrBadRequest, err))
+		redirectToError(c, go_kit.Wrap(go_kit.ErrBadRequest, err))
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *OAuth2Handler) Token(c *gin.Context) {
 		h.handleRefreshGrantType(c, client, tokenQuery)
 		return
 	default:
-		c.Error(api_err.ErrBadRequest.WithMessage("unsupported grant type"))
+		c.Error(go_kit.ErrBadRequest.WithMessage("unsupported grant type"))
 		return
 	}
 
@@ -206,7 +206,7 @@ func (h *OAuth2Handler) Register(c *gin.Context) {
 
 func (h *OAuth2Handler) handleAuthCodeGrantType(c *gin.Context, client *model.Client, tokenQuery model.TokenQuery) {
 	if !utils.Includes(client.RedirectUris, tokenQuery.RedirectURI) {
-		c.Error(api_err.ErrBadRequest.WithMessage("invalid redirect uri"))
+		c.Error(go_kit.ErrBadRequest.WithMessage("invalid redirect uri"))
 		return
 	}
 
@@ -241,13 +241,13 @@ func (h *OAuth2Handler) handleRefreshGrantType(c *gin.Context, client *model.Cli
 	}
 
 	if tokenQuery.RefreshToken == "" {
-		c.Error(api_err.ErrBadRequest.WithMessage("refresh token is missing"))
+		c.Error(go_kit.ErrBadRequest.WithMessage("refresh token is missing"))
 		return
 	}
 
 	sessionID, err := h.oauthService.ValidateRefreshToken(tokenQuery.RefreshToken)
 	if err != nil {
-		c.Error(api_err.Wrap(api_err.ErrUnauthorized, err))
+		c.Error(go_kit.Wrap(go_kit.ErrUnauthorized, err))
 		return
 	}
 
@@ -268,27 +268,27 @@ func (h *OAuth2Handler) handleRefreshGrantType(c *gin.Context, client *model.Cli
 
 func verifyAuthorizeQuery(query *model.AuthorizeQuery) error {
 	if query.ResponseType == "" {
-		return api_err.ErrBadRequest.WithMessage("response_type is required")
+		return go_kit.ErrBadRequest.WithMessage("response_type is required")
 	}
 
 	if query.ResponseType != "code" {
-		return api_err.ErrBadRequest.WithMessage("unsupported response_type value")
+		return go_kit.ErrBadRequest.WithMessage("unsupported response_type value")
 	}
 
 	if query.ClientID == "" {
-		return api_err.ErrBadRequest.WithMessage("client_id is required")
+		return go_kit.ErrBadRequest.WithMessage("client_id is required")
 	}
 
 	if query.RedirectURI == "" {
-		return api_err.ErrBadRequest.WithMessage("redirect_uri is required")
+		return go_kit.ErrBadRequest.WithMessage("redirect_uri is required")
 	}
 
 	if query.State == "" {
-		return api_err.ErrBadRequest.WithMessage("state is required")
+		return go_kit.ErrBadRequest.WithMessage("state is required")
 	}
 
 	if query.Scope == "" {
-		return api_err.ErrBadRequest.WithMessage("scope is required")
+		return go_kit.ErrBadRequest.WithMessage("scope is required")
 	}
 
 	return nil

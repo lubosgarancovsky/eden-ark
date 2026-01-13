@@ -8,9 +8,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/kit"
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,13 +27,13 @@ func NewUserService(
 	return &UserService{r: r, cfg: cfg, recoveryTokenService: recoveryTokenService, emailService: emailService}
 }
 
-func (s *UserService) FindAll(lq *list.ListingQuery) (*list.Page[model.User], error) {
+func (s *UserService) FindAll(lq *go_kit.ListingQuery) (*go_kit.Page[model.User], error) {
 	items, totalCount, err := s.r.FindAll(lq)
 	if err != nil {
 		return nil, err
 	}
 
-	return &list.Page[model.User]{
+	return &go_kit.Page[model.User]{
 		Items:      items,
 		Page:       lq.Page,
 		PageSize:   lq.Limit,
@@ -144,7 +142,7 @@ func (s *UserService) ResetPassword(tokenString string, password string) error {
 		return err
 	}
 	if token.UserID != user.ID {
-		return api_err.ErrBadRequest.WithMessage("invalid token")
+		return go_kit.ErrBadRequest.WithMessage("invalid token")
 	}
 
 	passwordHash, err := s.HashPassword(password)
@@ -205,7 +203,7 @@ func (s *UserService) GeneratePassword(userID uuid.UUID) error {
 		return err
 	}
 
-	password, err := kit.GeneratePassword(12)
+	password, err := go_kit.Password(12)
 	if err != nil {
 		return err
 	}
@@ -245,7 +243,7 @@ func (s *UserService) ChangeEmail(input *model.EmailChangeRequest) (*model.User,
 		return nil, err
 	}
 	if token.UserID != user.ID {
-		return nil, api_err.ErrBadRequest.WithMessage("invalid token")
+		return nil, go_kit.ErrBadRequest.WithMessage("invalid token")
 	}
 
 	user.Email = input.Email

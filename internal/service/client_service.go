@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 type ClientService struct {
@@ -15,13 +15,13 @@ func NewClientService(r *repository.ClientRepository) *ClientService {
 	return &ClientService{r}
 }
 
-func (s *ClientService) FindAll(lq *list.ListingQuery) (*list.Page[model.Client], error) {
+func (s *ClientService) FindAll(lq *go_kit.ListingQuery) (*go_kit.Page[model.Client], error) {
 	items, totalCount, err := s.r.FindAll(lq)
 	if err != nil {
 		return nil, err
 	}
 
-	return &list.Page[model.Client]{
+	return &go_kit.Page[model.Client]{
 		Items:      items,
 		Page:       lq.Page,
 		PageSize:   lq.Limit,

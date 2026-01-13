@@ -6,8 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/pkg/helpers"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -20,7 +19,7 @@ func NewClientSecretRepository(db *gorm.DB) *ClientSecretRepository {
 	return &ClientSecretRepository{db}
 }
 
-func (r *ClientSecretRepository) FindAll(clientID uuid.UUID, lq *list.ListingQuery) ([]model.ClientSecret, int64, error) {
+func (r *ClientSecretRepository) FindAll(clientID uuid.UUID, lq *go_kit.ListingQuery) ([]model.ClientSecret, int64, error) {
 	query := r.db.Model(&model.ClientSecret{}).Where("client_id = ?", clientID)
 	if lq.Filter != nil {
 		query = query.Where(lq.Filter.Query, lq.Filter.Args...)
@@ -51,10 +50,10 @@ func (r *ClientSecretRepository) Insert(clientSecret *model.ClientSecret) (*mode
 func (r *ClientSecretRepository) Delete(clientID uuid.UUID, clientSecretID uuid.UUID) error {
 	result := r.db.Where("id = ? AND client_id = ?", clientSecretID, clientID).Delete(&model.ClientSecret{})
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.Wrap(api_err.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Client secret with id %s does not exist", clientSecretID))
+		return go_kit.Wrap(go_kit.ErrNotFound, result.Error).WithMessage(fmt.Sprintf("Client secret with id %s does not exist", clientSecretID))
 	}
 	return nil
 }

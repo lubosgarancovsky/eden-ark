@@ -6,8 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
-	"github.com/lubosgarancovsky/go-kit/api_err"
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 
 	"crypto/rand"
 	"encoding/base64"
@@ -21,7 +20,7 @@ func NewClientSecretService(r *repository.ClientSecretRepository) *ClientSecretS
 	return &ClientSecretService{r}
 }
 
-func (s *ClientSecretService) FindAll(clientID uuid.UUID, lq *list.ListingQuery) (*list.Page[model.ClientSecret], error) {
+func (s *ClientSecretService) FindAll(clientID uuid.UUID, lq *go_kit.ListingQuery) (*go_kit.Page[model.ClientSecret], error) {
 	items, totalCount, err := s.r.FindAll(clientID, lq)
 	if err != nil {
 		return nil, err
@@ -37,7 +36,7 @@ func (s *ClientSecretService) FindAll(clientID uuid.UUID, lq *list.ListingQuery)
 		})
 	}
 
-	return &list.Page[model.ClientSecret]{
+	return &go_kit.Page[model.ClientSecret]{
 		Items:      items,
 		Page:       lq.Page,
 		PageSize:   lq.Limit,
@@ -52,7 +51,7 @@ func (s *ClientSecretService) ValidateSecret(clientID uuid.UUID, secretStr strin
 	}
 
 	if secret.ExpiresAt.Before(time.Now()) {
-		return nil, api_err.ErrUnauthorized.WithMessage("secret expired")
+		return nil, go_kit.ErrUnauthorized.WithMessage("secret expired")
 	}
 
 	return secret, nil
@@ -61,7 +60,7 @@ func (s *ClientSecretService) ValidateSecret(clientID uuid.UUID, secretStr strin
 func (s *ClientSecretService) Create(clientID uuid.UUID, input *model.ClientSecretRequest) (*model.ClientSecret, error) {
 	secretString, err := generateClientSecret(32)
 	if err != nil {
-		return nil, api_err.Wrap(api_err.ErrInternalServer, err)
+		return nil, go_kit.Wrap(go_kit.ErrInternalServer, err)
 	}
 
 	secret := &model.ClientSecret{

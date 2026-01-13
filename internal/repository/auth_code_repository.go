@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
-	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -33,10 +33,10 @@ func (r *AuthCodeRepository) Insert(code *model.AuthorizationCode) (*model.Autho
 func (r *AuthCodeRepository) Delete(code string) error {
 	result := r.db.Model(&model.AuthorizationCode{}).Where("code = ?", code).Delete(&model.AuthorizationCode{})
 	if result.Error != nil {
-		return api_err.Wrap(api_err.ErrInternalServer, result.Error)
+		return go_kit.Wrap(go_kit.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return api_err.ErrNotFound
+		return go_kit.ErrNotFound
 	}
 	return nil
 }

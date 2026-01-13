@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/lubosgarancovsky/go-kit/list"
+	"github.com/lubosgarancovsky/go-kit"
 	"gorm.io/gorm"
 )
 
@@ -13,11 +13,15 @@ type ListState[T any] struct {
 	totalCount int64
 	wg         sync.WaitGroup
 	errList    chan error
-	lq         *list.ListingQuery
+	lq         *go_kit.ListingQuery
 }
 
 func OrderBy[T any](query *gorm.DB, state *ListState[T]) *gorm.DB {
-	for _, clause := range state.lq.Sort {
+	if state.lq.Sort == nil {
+		return query
+	}
+
+	for _, clause := range *state.lq.Sort {
 		query = query.Order(fmt.Sprintf("%s %s", clause.Field, clause.Direction))
 	}
 	return query
@@ -38,7 +42,7 @@ func Count[T any](query *gorm.DB, state *ListState[T]) {
 	}
 }
 
-func List[T any](query *gorm.DB, lq *list.ListingQuery) ([]T, int64, error) {
+func List[T any](query *gorm.DB, lq *go_kit.ListingQuery) ([]T, int64, error) {
 	state := &ListState[T]{
 		items:      make([]T, 0),
 		totalCount: 0,

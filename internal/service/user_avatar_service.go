@@ -12,7 +12,7 @@ import (
 	"github.com/lubosgarancovsky/eden-ark/internal/config"
 	"github.com/lubosgarancovsky/eden-ark/internal/model"
 	"github.com/lubosgarancovsky/eden-ark/internal/repository"
-	"github.com/lubosgarancovsky/go-kit/api_err"
+	"github.com/lubosgarancovsky/go-kit"
 )
 
 // 5MB
@@ -40,11 +40,11 @@ func (s *UserAvatarService) UploadAvatar(c *gin.Context, userID uuid.UUID) (*mod
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		return nil, api_err.ErrBadRequest.WithMessage("No file found")
+		return nil, go_kit.ErrBadRequest.WithMessage("No file found")
 	}
 
 	if file.Size > MaxSize {
-		return nil, api_err.ErrBadRequest.WithMessage("Uploaded file is too big.")
+		return nil, go_kit.ErrBadRequest.WithMessage("Uploaded file is too big.")
 	}
 
 	avatarMime, err := validateMimeType(file)
@@ -61,7 +61,7 @@ func (s *UserAvatarService) UploadAvatar(c *gin.Context, userID uuid.UUID) (*mod
 	fileName := getFileName(avatarMime, avatarVersion)
 
 	if fileName == "" {
-		return nil, api_err.ErrBadRequest.WithMessage("Invalid file name")
+		return nil, go_kit.ErrBadRequest.WithMessage("Invalid file name")
 	}
 
 	dst := filepath.Join(s.cfg.UploadsFolder, "avatars", folder, fileName)
@@ -94,7 +94,7 @@ func validateMimeType(file *multipart.FileHeader) (string, error) {
 
 	buffer := make([]byte, 512) // first 512 bytes for MIME sniffing
 	if _, err := openedFile.Read(buffer); err != nil {
-		return "", api_err.ErrBadRequest.WithMessage("Failed to read multipart file")
+		return "", go_kit.ErrBadRequest.WithMessage("Failed to read multipart file")
 	}
 
 	mimeType := http.DetectContentType(buffer)
@@ -104,7 +104,7 @@ func validateMimeType(file *multipart.FileHeader) (string, error) {
 		"image/webp": true,
 	}
 	if !allowed[mimeType] {
-		return "", api_err.ErrBadRequest.WithMessage("File of this type is not supported.")
+		return "", go_kit.ErrBadRequest.WithMessage("File of this type is not supported.")
 	}
 
 	return mimeType, nil
