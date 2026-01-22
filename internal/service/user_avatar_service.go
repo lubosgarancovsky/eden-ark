@@ -69,6 +69,10 @@ func (s *UserAvatarService) UploadAvatar(c *gin.Context, userID uuid.UUID) (*mod
 		return nil, err
 	}
 
+	if err := s.repository.Change(userID, avatarMime, avatarVersion); err != nil {
+		return nil, err
+	}
+
 	return &model.UserAvatar{
 		MimeType: avatarMime,
 		Version:  avatarVersion,
