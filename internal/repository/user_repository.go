@@ -21,6 +21,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 
 func (r *UserRepository) FindAll(lq *go_kit.ListingQuery) ([]model.User, int64, error) {
 	query := r.db.Model(&model.User{})
+
 	if lq.Filter != nil {
 		query = query.Where(lq.Filter.Query, lq.Filter.Args...)
 	}

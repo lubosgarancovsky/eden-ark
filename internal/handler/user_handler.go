@@ -19,6 +19,7 @@ type userListingAttributes struct {
 	IsActive  string `rsql:"filter,sort"`
 	Role      string `rsql:"filter,sort"`
 	DeletedAt string `rsql:"filter,sort"`
+	Name      string `rsql:"field:LOWER(first_name || ' ' || last_name),filter,sort"`
 }
 
 type UserHandler struct {
