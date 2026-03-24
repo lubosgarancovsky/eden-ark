@@ -1,0 +1,14 @@
+[Unit]
+Description=Eden Authentication, Registration & Key Management Service
+After=network-online.target
+
+[Service]
+Type=forking
+RemainAfterExit=yes
+WorkingDirectory=/home/lubos/homelab/apps/eden/eden-ark
+ExecStart=/usr/bin/podman-compose up -d --force-recreate
+ExecStop=/usr/bin/podman-compose down
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

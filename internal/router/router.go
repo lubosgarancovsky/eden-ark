@@ -130,8 +130,8 @@ func SetupRouter(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 	// Internal
 	{
-		v1.GET("/internal/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-		v1.GET("/internal/health", func(c *gin.Context) {
+		v1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		v1.GET("/health", func(c *gin.Context) {
 			c.JSON(200, gin.H{
 				"status": "ok",
 			})
