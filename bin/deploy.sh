@@ -49,6 +49,9 @@ echo "-- Stop and disable service"
 systemctl --user stop $SERVICE_NAME.service
 systemctl --user disable $SERVICE_NAME.service
 
+echo "-- Build new image"
+podman-compose build
+
 echo "-- Creating systemd service"
 mv $SERVICE_NAME.service $SYSTEMD_PATH
 
