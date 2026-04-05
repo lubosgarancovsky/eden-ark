@@ -31,13 +31,13 @@ func (s *ClientSecretService) FindAll(clientID uuid.UUID, lq *go_kit.ListingQuer
 		masked = append(masked, model.ClientSecret{
 			ID:           item.ID,
 			ClientID:     item.ClientID,
-			ClientSecret: maskClientSecret(item.ClientSecret, 4, 4),
+			ClientSecret: maskClientSecret(item.ClientSecret, 0, 4),
 			ExpiresAt:    item.ExpiresAt,
 		})
 	}
 
 	return &go_kit.Page[model.ClientSecret]{
-		Items:      items,
+		Items:      masked,
 		Page:       lq.Page,
 		PageSize:   lq.Limit,
 		TotalCount: totalCount,
