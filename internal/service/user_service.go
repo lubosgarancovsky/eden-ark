@@ -189,7 +189,7 @@ func (s *UserService) RequestEmailChange(userID uuid.UUID) error {
 		AppName:          "Eden",
 		Year:             time.Now().Year(),
 		Token:            token.Token,
-		ConfirmURL:       fmt.Sprintf("%s/change-email", s.cfg.PublicURL),
+		ConfirmURL:       fmt.Sprintf("%s", s.cfg.UrlChangeEmail),
 		ExpiresAt:        token.ExpiresAt.Format(time.RFC3339Nano),
 		ExpiresInMinutes: int(time.Until(token.ExpiresAt).Minutes()) + 1,
 	}

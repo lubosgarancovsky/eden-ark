@@ -22,6 +22,7 @@ type Config struct {
 	RecoveryTokenExp int    `field:"RECOVERY_TOKEN_EXP"`
 	TemplatesFolder  string `field:"TEMPLATES_FOLDER"`
 	UploadsFolder    string `field:"UPLOADS_FOLDER"`
+	UrlChangeEmail   string `field:"URL_CHANGE_EMAIL"`
 }
 
 func LoadConfig() *Config {
