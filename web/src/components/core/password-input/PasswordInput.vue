@@ -36,11 +36,18 @@ const updateValue = (e: Event) => {
     {{ props.icon }}
   </InputGroupAddon>
    <InputGroupInput :value="props.modelValue" @input="updateValue" :placeholder="props.placeholder" :type="isMasked ? 'password' : 'text'" :name="props.name"/>
-  <InputGroupAddon align="inline-end">
-    <Button @click="togglePasswordMask" size="icon-sm" variant="ghost" type="button" class="cursor-pointer">
-      <Eye v-if="isMasked" />
-      <EyeOff v-else/>
-    </Button>
-  </InputGroupAddon>
+   <InputGroupAddon align="inline-end" class="pointer-events-none">
+     <Button
+         @pointerdown.prevent
+         @click="togglePasswordMask"
+         size="icon-sm"
+         variant="ghost"
+         type="button"
+         class="cursor-pointer pointer-events-auto"
+     >
+       <Eye v-if="isMasked" />
+       <EyeOff v-else />
+     </Button>
+   </InputGroupAddon>
 </InputGroup>
 </template>
